@@ -4,6 +4,8 @@ An open-source, interactive map of global migration — an homage to (and rebuil
 [Max Galka's Metrocosm global immigration map](https://web.archive.org/web/2018/http://metrocosm.com/global-immigration-map/),
 whose original site is no longer online.
 
+**Live map: <https://code-4you.github.io/world-migration-flows/>**
+
 Animated particles show estimated net migration flows between countries.
 Circles show each country's total net migration: **blue = net gain, red = net loss**.
 Hover a circle for numbers. Pick a country (USA / China / Germany / Australia, or any
