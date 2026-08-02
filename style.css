@@ -120,21 +120,6 @@ html, body {
 #tooltip .sub { margin-top: 5px; font-weight: 600; color: #ffce3a; }
 #tooltip .mini { color: #bbb; }
 
-/* big period watermark shown while playing */
-#period-label {
-  position: absolute;
-  right: 28px;
-  bottom: 46px;
-  font-size: 64px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.35);
-  pointer-events: none;
-  z-index: 9;
-  display: none;
-}
-#period-label.show { display: block; }
-
 #credits {
   position: absolute;
   left: 0;

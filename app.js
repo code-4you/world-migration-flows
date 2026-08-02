@@ -197,7 +197,9 @@ function projectRoutes() {
   }
 }
 
-function rebuildCircles() {
+/* animate = true when the data changed (period/selection) -> tween radii;
+ * false for view changes (pan/zoom), which must track instantly */
+function rebuildCircles(animate) {
   const flows = state.flows[state.period];
   const C = state.countries;
   const sel = state.selected;
@@ -235,7 +237,38 @@ function rebuildCircles() {
   }
   circles.sort((a, b) => b.r - a.r); // big first so small stay hoverable
   state.circles = circles;
-  drawCircles();
+  if (animate) startCircleTween();
+  else {
+    cancelAnimationFrame(state.tweenRaf);
+    rememberRadii();
+    drawCircles();
+  }
+}
+
+/* Smooth ~1s grow/shrink between data states */
+const TWEEN_MS = 1000;
+
+function rememberRadii() {
+  state.prevRadii = Object.fromEntries(state.circles.map((c) => [c.iso2, c.r]));
+}
+
+function startCircleTween() {
+  cancelAnimationFrame(state.tweenRaf);
+  const prev = state.prevRadii || {};
+  for (const c of state.circles) {
+    c.r0 = prev[c.iso2] || 0;
+    c.r1 = c.r;
+  }
+  const t0 = performance.now();
+  const tick = (now) => {
+    const t = Math.min(1, (now - t0) / TWEEN_MS);
+    const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
+    for (const c of state.circles) c.r = c.r0 + (c.r1 - c.r0) * e;
+    drawCircles();
+    if (t < 1) state.tweenRaf = requestAnimationFrame(tick);
+    else rememberRadii();
+  };
+  state.tweenRaf = requestAnimationFrame(tick);
 }
 
 /* ---------- drawing ---------- */
@@ -386,10 +419,8 @@ async function setPeriod(id) {
   const era = document.getElementById("era-select");
   era.value = EARLY_PERIODS.some((p) => p.id === id) ? id : "";
   era.classList.toggle("active", era.value !== "");
-  document.getElementById("period-label").textContent =
-    ALL_PERIODS().find((p) => p.id === id).label;
   rebuildRoutes();
-  rebuildCircles();
+  rebuildCircles(true);
 }
 
 async function setCountry(iso2) {
@@ -400,14 +431,13 @@ async function setCountry(iso2) {
     ? `<i class="dot in"></i> arriving &nbsp;<i class="dot out"></i> leaving`
     : `<i class="dot flow"></i> migration flow`;
   rebuildRoutes();
-  rebuildCircles();
+  rebuildCircles(true);
 }
 
 function stopPlay() {
   state.playing = false;
   clearInterval(state.playTimer);
   document.getElementById("play").innerHTML = "&#9654; Play";
-  document.getElementById("period-label").classList.remove("show");
 }
 
 /* Cycle through every period chronologically, looping forever */
@@ -415,7 +445,6 @@ function startPlay() {
   stopPlay();
   state.playing = true;
   document.getElementById("play").innerHTML = "&#9646;&#9646; Stop";
-  document.getElementById("period-label").classList.add("show");
   const seq = ALL_PERIODS();
   let i = 0; // always start from the earliest period
   setPeriod(seq[i].id);
