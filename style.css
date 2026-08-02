@@ -60,7 +60,7 @@ html, body {
 
 #topbar button:hover { border-color: #666; color: #fff; }
 
-#topbar button.active {
+#topbar button.active, #topbar select.active {
   background: #ffce3a;
   border-color: #ffce3a;
   color: #111;

@@ -12,23 +12,25 @@ every period from 1990 to 2024.
 
 ## Data
 
-- **Source:** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock)
+- **1990–2024:** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock)
   (destination-and-origin matrix, revisions for 1990–2024, 230+ countries).
+- **1960–1990:** [UNU-CRIS imputed bilateral migration dataset](https://riks.cris.unu.edu/annual-bilateral-migration-data)
+  (Standaert & Rayp 2022, annual imputed bilateral stocks 1960–2020), used for
+  the 1960–1970, 1970–1980, and 1980–1990 periods in the "Earlier…" dropdown.
 - **Method:** net flow between two countries over a period is estimated as the
   change in bilateral migrant stocks — the same approximation the original map
   used. It ignores deaths and return/onward migration, so treat the numbers as
-  estimates, not counts.
-- **Periods:** 1990–2000, 2000–2010, 2010–2020, 2020–2024 (the latest UN estimate).
-  Pre-1990 data is not part of the UN bilateral series; extending further back
-  would need a different source (see roadmap).
+  estimates, not counts. The two sources use different estimation pipelines, so
+  expect a methodological seam at 1990.
 
 Regenerate the data files with:
 
 ```bash
 python scripts/process.py
+python scripts/process_early.py
 ```
 
-(after downloading the UN matrix file into `raw/` — see the script docstring).
+(after downloading the source files into `raw/` — see the script docstrings).
 
 ## Running locally
 
@@ -51,11 +53,12 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
 
 - [x] 2020–2024 flows (latest UN estimates)
 - [x] 2010–2020, 2000–2010, 1990–2000 options
-- [x] Country focus buttons + all-countries dropdown
-- [x] Play button stepping through periods
-- [ ] Pre-1990 periods (needs a non-UN historical source; global bilateral data
-      back to 1920 does not exist in comparable form — likely limited to a
-      handful of countries with long census records)
+- [x] 1960–1990 periods via the "Earlier…" dropdown (UNU-CRIS data)
+- [x] Click a country on the map to focus it; all-countries dropdown
+- [x] Play button cycling through all periods continuously
+- [ ] Pre-1960 periods: no comparable global bilateral dataset exists back to
+      1920 — extending further would be limited to a handful of countries with
+      long census records
 - [ ] Per-country play mode narration / camera movement
 
 ## Credits
@@ -63,6 +66,8 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
 - Concept and original visualization: [Max Galka (Metrocosm)](https://web.archive.org/web/2018/http://metrocosm.com/)
 - Data: United Nations, Department of Economic and Social Affairs, Population
   Division — International Migrant Stock 2024 (POP/DB/MIG/Stock/Rev.2024)
+- Data (1960–1990): Standaert, S. & G. Rayp (2022), "Where Did They Come From,
+  Where Did They Go? Bridging the Gaps in Migration Data", UNU-CRIS
 - Basemap tiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)
   contributors, © [CARTO](https://carto.com/attributions)
 - Map rendering: [MapLibre GL JS](https://maplibre.org/)

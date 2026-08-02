@@ -4,12 +4,21 @@
 
 "use strict";
 
+/* Periods shown as buttons (UN International Migrant Stock 2024) */
 const PERIODS = [
   { id: "1990_2000", label: "1990–2000" },
   { id: "2000_2010", label: "2000–2010" },
   { id: "2010_2020", label: "2010–2020" },
   { id: "2020_2024", label: "2020–2024" },
 ];
+/* Earlier periods offered in the "Earlier…" dropdown (UNU-CRIS imputed
+ * bilateral migration dataset, Standaert & Rayp 2022) */
+const EARLY_PERIODS = [
+  { id: "1960_1970", label: "1960–1970" },
+  { id: "1970_1980", label: "1970–1980" },
+  { id: "1980_1990", label: "1980–1990" },
+];
+const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
 const DEFAULT_PERIOD = "2020_2024";
 const PLAY_STEP_MS = 5000;
 const MAX_PARTICLES = 3500;
@@ -276,7 +285,7 @@ map.getCanvas().parentElement.addEventListener("mousemove", (e) => {
     return;
   }
   const name = state.countries[c.iso2].name;
-  const label = PERIODS.find((p) => p.id === state.period).label;
+  const label = ALL_PERIODS().find((p) => p.id === state.period).label;
   const cls = c.net >= 0 ? "gain" : "loss";
   const context = state.selected && c.iso2 !== state.selected
     ? ` vs ${state.countries[state.selected].name}`
@@ -295,6 +304,9 @@ async function setPeriod(id) {
   document
     .querySelectorAll("#period-buttons button")
     .forEach((b) => b.classList.toggle("active", b.dataset.period === id));
+  const era = document.getElementById("era-select");
+  era.value = EARLY_PERIODS.some((p) => p.id === id) ? id : "";
+  era.classList.toggle("active", era.value !== "");
   rebuildRoutes();
   rebuildCircles();
 }
@@ -302,11 +314,7 @@ async function setPeriod(id) {
 async function setCountry(iso2) {
   if (iso2 && !(state.flows[state.period] || {})[iso2]) iso2 = "";
   state.selected = iso2;
-  document
-    .querySelectorAll("#country-buttons button")
-    .forEach((b) => b.classList.toggle("active", b.dataset.country === iso2));
-  document.getElementById("country-select").value =
-    ["US", "CN", "DE", "AU"].includes(iso2) ? "" : iso2;
+  document.getElementById("country-select").value = iso2;
   rebuildRoutes();
   rebuildCircles();
 }
@@ -317,19 +325,17 @@ function stopPlay() {
   document.getElementById("play").innerHTML = "&#9654; Play";
 }
 
+/* Cycle through every period chronologically, looping forever */
 function startPlay() {
   stopPlay();
   state.playing = true;
   document.getElementById("play").innerHTML = "&#9646;&#9646; Stop";
-  let i = 0;
-  setPeriod(PERIODS[i].id);
+  const seq = ALL_PERIODS();
+  let i = 0; // always start from the earliest period
+  setPeriod(seq[i].id);
   state.playTimer = setInterval(() => {
-    i += 1;
-    if (i >= PERIODS.length) {
-      stopPlay();
-      return;
-    }
-    setPeriod(PERIODS[i].id);
+    i = (i + 1) % seq.length;
+    setPeriod(seq[i].id);
   }, PLAY_STEP_MS);
 }
 
@@ -350,15 +356,35 @@ async function init() {
     periodBar.appendChild(b);
   }
 
-  document.querySelectorAll("#country-buttons button").forEach((b) =>
-    b.addEventListener("click", () =>
-      setCountry(state.selected === b.dataset.country ? "" : b.dataset.country)
-    )
-  );
+  const eraSelect = document.getElementById("era-select");
+  for (const p of EARLY_PERIODS) {
+    const o = document.createElement("option");
+    o.value = p.id;
+    o.textContent = p.label;
+    eraSelect.appendChild(o);
+  }
+  eraSelect.addEventListener("change", () => {
+    if (!eraSelect.value) return;
+    stopPlay();
+    setPeriod(eraSelect.value);
+  });
 
   document.getElementById("play").addEventListener("click", () =>
     state.playing ? stopPlay() : startPlay()
   );
+
+  // click a country circle on the map to select it; click empty space to clear
+  let downAt = null;
+  const mapEl = map.getCanvas().parentElement;
+  mapEl.addEventListener("mousedown", (e) => (downAt = [e.clientX, e.clientY]));
+  mapEl.addEventListener("mouseup", (e) => {
+    if (!downAt) return;
+    const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]);
+    downAt = null;
+    if (moved > 5) return; // it was a pan, not a click
+    const c = hitTest(e.clientX, e.clientY);
+    setCountry(c && c.iso2 !== state.selected ? c.iso2 : "");
+  });
 
   state.countries = await (await fetch("data/countries.json")).json();
 
@@ -377,7 +403,7 @@ async function init() {
   const params = new URLSearchParams(location.search);
   const p = params.get("p");
   const c = (params.get("c") || "").toUpperCase();
-  const startPeriod = PERIODS.some((x) => x.id === p) ? p : DEFAULT_PERIOD;
+  const startPeriod = ALL_PERIODS().some((x) => x.id === p) ? p : DEFAULT_PERIOD;
   await loadPeriod(startPeriod);
   if (c && state.countries[c]) state.selected = c;
   await setPeriod(startPeriod);
@@ -396,4 +422,6 @@ async function init() {
   requestAnimationFrame(frame);
 }
 
-map.on("load", init);
+// Not gated on map "load": the overlay only needs map.project(), which works
+// from construction — so slow basemap tiles never block the visualization.
+init();
