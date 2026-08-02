@@ -147,7 +147,7 @@ function rebuildRoutes() {
       if (sel && a !== sel && b !== sel) continue;
       const mag = flows[a][b]; // gross b -> a
       // in the all-countries view, keep only substantial routes for legibility
-      if (mag < (sel ? 500 : 25000)) continue;
+      if (mag < (sel ? 100 : 25000)) continue;
       const sprite = !sel ? SPRITES.flow : a === sel ? SPRITES.in : SPRITES.out;
       routes.push({ from: C[b], to: C[a], mag, sprite });
       totalMag += mag;
@@ -368,11 +368,12 @@ function tooltipHtml(c) {
     items
       .map(([iso2, v]) => `<div class="mini">${arrow} ${C[iso2].name}: ${v.toLocaleString("en-US")}</div>`)
       .join("");
+  const none = `<div class="mini">none recorded above 100</div>`;
   return (
     `<div class="name">${name}</div>` +
     `<div>Net migration ${label}: <span class="${cls}">${fmt(c.net)}</span></div>` +
-    (origins.length ? `<div class="sub">Top origins</div>${list(origins, "&larr;")}` : "") +
-    (dests.length ? `<div class="sub">Top destinations</div>${list(dests.slice(0, 5), "&rarr;")}` : "")
+    `<div class="sub">Top origins</div>` + (origins.length ? list(origins, "&larr;") : none) +
+    `<div class="sub">Top destinations</div>` + (dests.length ? list(dests.slice(0, 5), "&rarr;") : none)
   );
 }
 

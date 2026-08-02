@@ -30,7 +30,7 @@ OUT = os.path.join(HERE, "..", "data")
 
 YEARS = [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2024]
 PERIODS = [(1990, 2000), (2000, 2010), (2010, 2020), (2020, 2024)]
-PAIR_THRESHOLD = 500  # drop pair entries smaller than this to keep files lean
+PAIR_THRESHOLD = 100  # drop pair entries smaller than this to keep files lean
 
 # Kosovo appears in UN data but not in ISO 3166 lists
 EXTRA_M49 = {412: ("XK", "Kosovo")}

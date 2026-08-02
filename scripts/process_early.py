@@ -25,7 +25,7 @@ OUT = os.path.join(HERE, "..", "data")
 
 YEARS = [1960, 1970, 1980, 1990]
 PERIODS = [(1960, 1970), (1970, 1980), (1980, 1990)]
-PAIR_THRESHOLD = 500
+PAIR_THRESHOLD = 100
 
 # dataset name -> ISO name where simple matching fails (None = dissolved
 # entity with no single ISO successor; skipped)
