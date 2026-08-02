@@ -259,11 +259,15 @@ function startCircleTween() {
     c.r0 = prev[c.iso2] || 0;
     c.r1 = c.r;
   }
-  const t0 = performance.now();
+  // t0 comes from the rAF callback itself: performance.now() here can be
+  // LATER than the first frame's timestamp, which would make t negative,
+  // produce negative radii, and crash ctx.arc — killing the animation loop.
+  let t0 = null;
   const tick = (now) => {
-    const t = Math.min(1, (now - t0) / TWEEN_MS);
+    if (t0 === null) t0 = now;
+    const t = Math.min(1, Math.max(0, (now - t0) / TWEEN_MS));
     const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
-    for (const c of state.circles) c.r = c.r0 + (c.r1 - c.r0) * e;
+    for (const c of state.circles) c.r = Math.max(0, c.r0 + (c.r1 - c.r0) * e);
     drawCircles();
     if (t < 1) state.tweenRaf = requestAnimationFrame(tick);
     else rememberRadii();
@@ -278,11 +282,12 @@ function drawCircles() {
   const W = state.worldW || Infinity;
   for (const c of state.circles) {
     const selectedOne = c.iso2 === state.selected;
+    const r = Math.max(0, c.r); // a negative radius would throw and kill drawing
     for (const k of KS) {
       const x = c.x + k * W;
-      if (x + c.r < 0 || x - c.r > innerWidth) continue;
+      if (x + r < 0 || x - r > innerWidth) continue;
       cCtx.beginPath();
-      cCtx.arc(x, c.y, c.r, 0, Math.PI * 2);
+      cCtx.arc(x, c.y, r, 0, Math.PI * 2);
       cCtx.fillStyle = c.gain ? COLOR_IN : COLOR_OUT;
       cCtx.fill();
       cCtx.lineWidth = selectedOne ? 2.5 : 1;
