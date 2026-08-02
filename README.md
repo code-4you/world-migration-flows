@@ -71,6 +71,7 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
 ## Credits
 
 - Concept and original visualization: [Max Galka (Metrocosm)](https://web.archive.org/web/2018/http://metrocosm.com/)
+- Creator of this rebuild: [Michael van Diermen](https://mvandiermen.com/)
 - Data (1990–2020): Abel, G.J. & Cohen, J.E. (2019), "Bilateral international
   migration flow estimates for 200 countries", *Scientific Data* (updated 2025)
 - Data (2020–2024): United Nations, Department of Economic and Social Affairs,
