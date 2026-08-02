@@ -20,7 +20,7 @@ const EARLY_PERIODS = [
 ];
 const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
 const DEFAULT_PERIOD = "2020_2024";
-const PLAY_STEP_MS = 5000;
+const PLAY_STEP_MS = 6000;
 const MAX_PARTICLES = 10500;
 const BASE_ZOOM = 1.6;
 
@@ -78,18 +78,25 @@ const pCtx = pCanvas.getContext("2d");
 const cCtx = cCanvas.getContext("2d");
 const tooltip = document.getElementById("tooltip");
 
-/* Pre-rendered glow sprite for particles */
-const sprite = document.createElement("canvas");
-sprite.width = sprite.height = 16;
-{
-  const g = sprite.getContext("2d");
+/* Pre-rendered dot sprites: yellow (default), blue (arriving at the selected
+ * country), red (leaving it) */
+function makeSprite(core, mid) {
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 16;
+  const g = cv.getContext("2d");
   const grad = g.createRadialGradient(8, 8, 0, 8, 8, 8);
-  grad.addColorStop(0, "rgba(255, 235, 150, 1)");
-  grad.addColorStop(0.35, "rgba(255, 206, 58, 0.8)");
-  grad.addColorStop(1, "rgba(255, 206, 58, 0)");
+  grad.addColorStop(0, core);
+  grad.addColorStop(0.35, mid);
+  grad.addColorStop(1, "rgba(0,0,0,0)");
   g.fillStyle = grad;
   g.fillRect(0, 0, 16, 16);
+  return cv;
 }
+const SPRITES = {
+  flow: makeSprite("rgba(255, 235, 150, 1)", "rgba(255, 206, 58, 0.8)"),
+  in: makeSprite("rgba(190, 210, 255, 1)", "rgba(80, 130, 255, 0.85)"),
+  out: makeSprite("rgba(255, 180, 170, 1)", "rgba(240, 70, 55, 0.85)"),
+};
 
 function resizeCanvases() {
   const dpr = window.devicePixelRatio || 1;
@@ -124,13 +131,13 @@ function unwrapLon(fromLon, toLon) {
   return toLon;
 }
 
-/* Rebuild route list + particles for current period/selection */
+/* Rebuild route list + particles for current period/selection.
+ * flows[a][b] = gross migration b->a, so each direction is its own route. */
 function rebuildRoutes() {
   const flows = state.flows[state.period];
   const C = state.countries;
   const sel = state.selected;
   const routes = [];
-  const seen = new Set();
   let totalMag = 0;
 
   for (const a in flows) {
@@ -138,15 +145,11 @@ function rebuildRoutes() {
     for (const b in flows[a]) {
       if (b === a || !C[b]) continue;
       if (sel && a !== sel && b !== sel) continue;
-      const key = a < b ? a + b : b + a;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const net = flows[a][b]; // >0: a gains from b  => particles b->a
-      const [from, to] = net > 0 ? [C[b], C[a]] : [C[a], C[b]];
-      const mag = Math.abs(net);
+      const mag = flows[a][b]; // gross b -> a
       // in the all-countries view, keep only substantial routes for legibility
-      if (mag < (sel ? 2000 : 25000)) continue;
-      routes.push({ from, to, mag });
+      if (mag < (sel ? 500 : 25000)) continue;
+      const sprite = !sel ? SPRITES.flow : a === sel ? SPRITES.in : SPRITES.out;
+      routes.push({ from: C[b], to: C[a], mag, sprite });
       totalMag += mag;
     }
   }
@@ -194,17 +197,25 @@ function rebuildCircles() {
 
   let maxAbs = 1;
   const entries = [];
-  for (const iso2 in flows) {
-    if (!C[iso2]) continue;
-    const net = sel
-      ? iso2 === sel
-        ? flows[iso2][iso2] || 0
-        : -(flows[sel][iso2] || 0) // partner's net vs selected: >0 partner gains
-      : flows[iso2][iso2] || 0;
-    if (sel && iso2 !== sel && !flows[sel][iso2]) continue;
-    entries.push([iso2, net]);
-    maxAbs = Math.max(maxAbs, Math.abs(net));
+  if (!sel) {
+    for (const iso2 in flows) {
+      if (!C[iso2]) continue;
+      entries.push([iso2, flows[iso2][iso2] || 0]);
+    }
+  } else {
+    // partners = anyone with a flow to or from the selected country
+    const partners = new Set(Object.keys(flows[sel] || {}));
+    for (const c in flows) if (flows[c][sel]) partners.add(c);
+    partners.delete(sel);
+    entries.push([sel, (flows[sel] || {})[sel] || 0]);
+    for (const p of partners) {
+      if (!C[p]) continue;
+      // partner's net vs selected: >0 means the partner gains people
+      const net = ((flows[p] || {})[sel] || 0) - ((flows[sel] || {})[p] || 0);
+      entries.push([p, net]);
+    }
   }
+  for (const [, net] of entries) maxAbs = Math.max(maxAbs, Math.abs(net));
 
   state.worldW = worldWidth();
   const zoomScale = Math.pow(2, (map.getZoom() - BASE_ZOOM) * 0.6);
@@ -275,7 +286,7 @@ function frame() {
     const y = u * u * r.p0.y + 2 * u * t * r.p1.y + t * t * r.p2.y;
     for (const k of KS) {
       const xx = x + k * W;
-      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(sprite, xx - 1.5, y - 1.5, 3, 3);
+      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(r.sprite, xx - 1.5, y - 1.5, 3, 3);
     }
   }
   requestAnimationFrame(frame);
@@ -307,19 +318,55 @@ map.getCanvas().parentElement.addEventListener("mousemove", (e) => {
     tooltip.style.display = "none";
     return;
   }
-  const name = state.countries[c.iso2].name;
+  tooltip.innerHTML = tooltipHtml(c);
+  tooltip.style.display = "block";
+  tooltip.style.left = Math.min(e.clientX + 14, innerWidth - 260) + "px";
+  tooltip.style.top = Math.min(e.clientY + 14, innerHeight - 240) + "px";
+});
+
+function tooltipHtml(c) {
+  const flows = state.flows[state.period];
+  const C = state.countries;
+  const sel = state.selected;
+  const name = C[c.iso2].name;
   const label = ALL_PERIODS().find((p) => p.id === state.period).label;
   const cls = c.net >= 0 ? "gain" : "loss";
-  const context = state.selected && c.iso2 !== state.selected
-    ? ` vs ${state.countries[state.selected].name}`
-    : "";
-  tooltip.innerHTML =
+
+  // hovering a partner while a country is selected: show the pair, both ways
+  if (sel && c.iso2 !== sel) {
+    const sName = C[sel].name;
+    const toSel = (flows[sel] || {})[c.iso2] || 0;
+    const fromSel = (flows[c.iso2] || {})[sel] || 0;
+    return (
+      `<div class="name">${name}</div>` +
+      `<div>${name} &rarr; ${sName}: <span class="gain">${toSel.toLocaleString("en-US")}</span></div>` +
+      `<div>${sName} &rarr; ${name}: <span class="loss">${fromSel.toLocaleString("en-US")}</span></div>` +
+      `<div>Net for ${name}: <span class="${cls}">${fmt(c.net)}</span></div>`
+    );
+  }
+
+  // top 5 origins (into this country) and destinations (out of it)
+  const row = flows[c.iso2] || {};
+  const origins = Object.entries(row)
+    .filter(([b]) => b !== c.iso2 && C[b])
+    .sort((x, y) => y[1] - x[1])
+    .slice(0, 5);
+  const dests = [];
+  for (const d in flows) {
+    if (d !== c.iso2 && flows[d][c.iso2] && C[d]) dests.push([d, flows[d][c.iso2]]);
+  }
+  dests.sort((x, y) => y[1] - x[1]);
+  const list = (items, arrow) =>
+    items
+      .map(([iso2, v]) => `<div class="mini">${arrow} ${C[iso2].name}: ${v.toLocaleString("en-US")}</div>`)
+      .join("");
+  return (
     `<div class="name">${name}</div>` +
-    `<div>Net migration ${label}${context}: <span class="${cls}">${fmt(c.net)}</span></div>`;
-  tooltip.style.display = "block";
-  tooltip.style.left = Math.min(e.clientX + 14, innerWidth - 250) + "px";
-  tooltip.style.top = e.clientY + 14 + "px";
-});
+    `<div>Net migration ${label}: <span class="${cls}">${fmt(c.net)}</span></div>` +
+    (origins.length ? `<div class="sub">Top origins</div>${list(origins, "&larr;")}` : "") +
+    (dests.length ? `<div class="sub">Top destinations</div>${list(dests.slice(0, 5), "&rarr;")}` : "")
+  );
+}
 
 async function setPeriod(id) {
   state.period = id;
@@ -330,6 +377,8 @@ async function setPeriod(id) {
   const era = document.getElementById("era-select");
   era.value = EARLY_PERIODS.some((p) => p.id === id) ? id : "";
   era.classList.toggle("active", era.value !== "");
+  document.getElementById("period-label").textContent =
+    ALL_PERIODS().find((p) => p.id === id).label;
   rebuildRoutes();
   rebuildCircles();
 }
@@ -338,6 +387,9 @@ async function setCountry(iso2) {
   if (iso2 && !(state.flows[state.period] || {})[iso2]) iso2 = "";
   state.selected = iso2;
   document.getElementById("country-select").value = iso2;
+  document.getElementById("legend-flow").innerHTML = iso2
+    ? `<i class="dot in"></i> arriving &nbsp;<i class="dot out"></i> leaving`
+    : `<i class="dot flow"></i> migration flow`;
   rebuildRoutes();
   rebuildCircles();
 }
@@ -346,6 +398,7 @@ function stopPlay() {
   state.playing = false;
   clearInterval(state.playTimer);
   document.getElementById("play").innerHTML = "&#9654; Play";
+  document.getElementById("period-label").classList.remove("show");
 }
 
 /* Cycle through every period chronologically, looping forever */
@@ -353,6 +406,7 @@ function startPlay() {
   stopPlay();
   state.playing = true;
   document.getElementById("play").innerHTML = "&#9646;&#9646; Stop";
+  document.getElementById("period-label").classList.add("show");
   const seq = ALL_PERIODS();
   let i = 0; // always start from the earliest period
   setPeriod(seq[i].id);

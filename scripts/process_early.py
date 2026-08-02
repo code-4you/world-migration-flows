@@ -25,7 +25,7 @@ OUT = os.path.join(HERE, "..", "data")
 
 YEARS = [1960, 1970, 1980, 1990]
 PERIODS = [(1960, 1970), (1970, 1980), (1980, 1990)]
-PAIR_THRESHOLD = 1000
+PAIR_THRESHOLD = 500
 
 # dataset name -> ISO name where simple matching fails (None = dissolved
 # entity with no single ISO successor; skipped)
@@ -133,24 +133,18 @@ def load_stocks(by_name):
 
 
 def build_period(stocks, t1, t2):
+    """Same gross-flow format as process.py: flows[A][B] = stock increase of
+    B-born living in A (clamped at 0); flows[A][A] = total net."""
     flows = defaultdict(dict)
     totals = defaultdict(int)
-    seen = set()
     for a in stocks:
         for b in stocks[a]:
-            if (b, a) in seen:
-                continue
-            seen.add((a, b))
             sa = stocks[a][b]  # b-born living in a
-            sb = stocks.get(b, {}).get(a, {})
-            d_into_a = sa.get(t2, 0) - sa.get(t1, 0)
-            d_into_b = sb.get(t2, 0) - sb.get(t1, 0)
-            net_a = d_into_a - d_into_b
-            totals[a] += net_a
-            totals[b] -= net_a
-            if abs(net_a) >= PAIR_THRESHOLD:
-                flows[a][b] = net_a
-                flows[b][a] = -net_a
+            d = sa.get(t2, 0) - sa.get(t1, 0)
+            totals[a] += d
+            totals[b] -= d
+            if d >= PAIR_THRESHOLD:
+                flows[a][b] = d
     for c, t in totals.items():
         if flows[c] or abs(t) >= PAIR_THRESHOLD:
             flows[c][c] = t

@@ -30,7 +30,7 @@ OUT = os.path.join(HERE, "..", "data")
 
 YEARS = [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2024]
 PERIODS = [(1990, 2000), (2000, 2010), (2010, 2020), (2020, 2024)]
-PAIR_THRESHOLD = 1000  # drop pair entries smaller than this to keep files lean
+PAIR_THRESHOLD = 500  # drop pair entries smaller than this to keep files lean
 
 # Kosovo appears in UN data but not in ISO 3166 lists
 EXTRA_M49 = {412: ("XK", "Kosovo")}
@@ -98,25 +98,20 @@ def load_stocks(m49_to_iso2):
 
 
 def build_period(stocks, t1, t2):
+    """flows[A][B] = gross migration B->A over the period (stock increase of
+    B-born living in A, clamped at 0), so both directions of a pair are kept.
+    flows[A][A] = A's total net (sum of raw pairwise deltas, unclamped)."""
     i1, i2 = YEARS.index(t1), YEARS.index(t2)
     flows = defaultdict(dict)
     totals = defaultdict(int)
-    seen = set()
     for a in stocks:
         for b in stocks[a]:
-            if (b, a) in seen:
-                continue
-            seen.add((a, b))
-            into_a = stocks[a].get(b, [0] * 8)
-            into_b = stocks.get(b, {}).get(a, [0] * 8)
-            d_into_a = into_a[i2] - into_a[i1]
-            d_into_b = into_b[i2] - into_b[i1]
-            net_a = d_into_a - d_into_b  # >0: A gains from B
-            totals[a] += net_a
-            totals[b] -= net_a
-            if abs(net_a) >= PAIR_THRESHOLD:
-                flows[a][b] = net_a
-                flows[b][a] = -net_a
+            vals = stocks[a][b]
+            d = vals[i2] - vals[i1]  # change in B-born living in A
+            totals[a] += d
+            totals[b] -= d
+            if d >= PAIR_THRESHOLD:
+                flows[a][b] = d
     for c, t in totals.items():
         if flows[c] or abs(t) >= PAIR_THRESHOLD:
             flows[c][c] = t
