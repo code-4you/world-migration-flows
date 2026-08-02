@@ -172,19 +172,17 @@ function worldWidth() {
   return map.project([180, 0]).x - map.project([-180, 0]).x;
 }
 
-/* Project route endpoints to screen px; arc control point perpendicular to the chord */
+/* Project route endpoints to screen px; straight lines (p1 = midpoint keeps
+ * the quadratic-bezier particle math while degenerating it to a segment) */
 function projectRoutes() {
   state.worldW = worldWidth();
   for (const r of state.routes) {
     const p0 = map.project([r.from.lon, r.from.lat]);
     const p2 = map.project([unwrapLon(r.from.lon, r.to.lon), r.to.lat]);
-    const dx = p2.x - p0.x, dy = p2.y - p0.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const bend = Math.min(len * 0.18, 70);
     r.p0 = p0;
     r.p2 = p2;
-    r.p1 = { x: (p0.x + p2.x) / 2 - (dy / len) * bend, y: (p0.y + p2.y) / 2 + (dx / len) * bend };
-    r.len = len;
+    r.p1 = { x: (p0.x + p2.x) / 2, y: (p0.y + p2.y) / 2 };
+    r.len = Math.hypot(p2.x - p0.x, p2.y - p0.y) || 1;
   }
 }
 
