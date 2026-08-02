@@ -21,7 +21,7 @@ const EARLY_PERIODS = [
 const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
 const DEFAULT_PERIOD = "2020_2024";
 const PLAY_STEP_MS = 6000;
-const MAX_PARTICLES = 10500;
+const MAX_PARTICLES = 8400;
 const BASE_ZOOM = 1.6;
 
 const COLOR_IN = "rgba(64, 120, 255, 0.55)";
@@ -154,7 +154,7 @@ function rebuildRoutes() {
     }
   }
 
-  const perParticle = Math.max(700, totalMag / MAX_PARTICLES);
+  const perParticle = Math.max(875, totalMag / MAX_PARTICLES);
   const particles = [];
   routes.forEach((r, i) => {
     const n = Math.max(1, Math.min(1800, Math.round(r.mag / perParticle)));
@@ -294,7 +294,7 @@ function frame() {
     const y = u * u * r.p0.y + 2 * u * t * r.p1.y + t * t * r.p2.y + r.ny * p.o;
     for (const k of KS) {
       const xx = x + k * W;
-      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(r.sprite, xx - 1.5, y - 1.5, 3, 3);
+      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(r.sprite, xx - 1.8, y - 1.8, 3.6, 3.6);
     }
   }
   requestAnimationFrame(frame);
