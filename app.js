@@ -159,7 +159,12 @@ function rebuildRoutes() {
   routes.forEach((r, i) => {
     const n = Math.max(1, Math.min(1800, Math.round(r.mag / perParticle)));
     for (let k = 0; k < n; k++) {
-      particles.push({ r: i, t: Math.random() });
+      particles.push({
+        r: i,
+        t: Math.random(),
+        o: (Math.random() - 0.5) * 6, // slight perpendicular skew, like the original
+        v: 0.85 + Math.random() * 0.3, // tiny speed variation
+      });
     }
   });
   state.routes = routes;
@@ -186,6 +191,9 @@ function projectRoutes() {
     r.p2 = p2;
     r.p1 = { x: (p0.x + p2.x) / 2, y: (p0.y + p2.y) / 2 };
     r.len = Math.hypot(p2.x - p0.x, p2.y - p0.y) || 1;
+    // unit normal, for each particle's slight off-line skew
+    r.nx = -(p2.y - p0.y) / r.len;
+    r.ny = (p2.x - p0.x) / r.len;
   }
 }
 
@@ -279,11 +287,11 @@ function frame() {
   for (const p of state.particles) {
     const r = routes[p.r];
     if (!r || !r.p0) continue;
-    p.t += 1.6 / r.len; // ~constant px speed
+    p.t += (1.6 * p.v) / r.len; // ~constant px speed
     if (p.t > 1) p.t -= 1;
     const t = p.t, u = 1 - t;
-    const x = u * u * r.p0.x + 2 * u * t * r.p1.x + t * t * r.p2.x;
-    const y = u * u * r.p0.y + 2 * u * t * r.p1.y + t * t * r.p2.y;
+    const x = u * u * r.p0.x + 2 * u * t * r.p1.x + t * t * r.p2.x + r.nx * p.o;
+    const y = u * u * r.p0.y + 2 * u * t * r.p1.y + t * t * r.p2.y + r.ny * p.o;
     for (const k of KS) {
       const xx = x + k * W;
       if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(r.sprite, xx - 1.5, y - 1.5, 3, 3);
