@@ -1,0 +1,133 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #ddd;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+}
+
+#particles, #circles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  background: rgba(10, 10, 12, 0.82);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 10;
+}
+
+#topbar h1 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0 6px 0 0;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+#topbar button, #topbar select {
+  background: #1c1c22;
+  color: #ccc;
+  border: 1px solid #33333c;
+  border-radius: 4px;
+  padding: 5px 11px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#topbar button:hover { border-color: #666; color: #fff; }
+
+#topbar button.active {
+  background: #ffce3a;
+  border-color: #ffce3a;
+  color: #111;
+  font-weight: 600;
+}
+
+#play { min-width: 84px; }
+
+#legend {
+  position: absolute;
+  left: 12px;
+  bottom: 34px;
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: #bbb;
+  background: rgba(10, 10, 12, 0.7);
+  padding: 6px 10px;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+.dot.in { background: rgba(64, 120, 255, 0.85); }
+.dot.out { background: rgba(230, 55, 45, 0.85); }
+.dot.flow { background: #ffce3a; box-shadow: 0 0 6px #ffce3a; }
+
+#tooltip {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  background: rgba(15, 15, 18, 0.95);
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 7px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  z-index: 20;
+  max-width: 240px;
+}
+
+#tooltip .name { font-weight: 600; color: #fff; }
+#tooltip .gain { color: #7da2ff; }
+#tooltip .loss { color: #ff8177; }
+
+#credits {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: #888;
+  background: rgba(10, 10, 12, 0.82);
+  z-index: 10;
+}
+
+#credits a { color: #aaa; }
+
+@media (max-width: 720px) {
+  #topbar h1 { display: none; }
+}

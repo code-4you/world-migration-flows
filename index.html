@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>World Migration Flows</title>
+  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="style.css" rel="stylesheet" />
+</head>
+<body>
+  <div id="map"></div>
+  <canvas id="particles"></canvas>
+  <canvas id="circles"></canvas>
+  <div id="tooltip"></div>
+
+  <header id="topbar">
+    <h1>World Migration Flows</h1>
+    <div class="group" id="country-buttons">
+      <button data-country="US">USA</button>
+      <button data-country="CN">China</button>
+      <button data-country="DE">Germany</button>
+      <button data-country="AU">Australia</button>
+      <select id="country-select">
+        <option value="">All countries</option>
+      </select>
+    </div>
+    <div class="group" id="period-buttons"></div>
+    <button id="play">&#9654; Play</button>
+  </header>
+
+  <div id="legend">
+    <span><i class="dot in"></i> net gain</span>
+    <span><i class="dot out"></i> net loss</span>
+    <span><i class="dot flow"></i> migration flow</span>
+  </div>
+
+  <footer id="credits">
+    Data: <a href="https://www.un.org/development/desa/pd/content/international-migrant-stock" target="_blank" rel="noopener">UN DESA, International Migrant Stock 2024</a>
+    (net flows estimated from stock changes) &middot;
+    Concept: <a href="https://web.archive.org/web/2018/http://metrocosm.com/global-immigration-map/" target="_blank" rel="noopener">Max Galka, Metrocosm</a> &middot;
+    Tiles: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> &middot;
+    <a href="https://github.com/" id="repo-link" target="_blank" rel="noopener">Source (MIT)</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
