@@ -21,7 +21,7 @@ const EARLY_PERIODS = [
 const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
 const DEFAULT_PERIOD = "2020_2024";
 const PLAY_STEP_MS = 5000;
-const MAX_PARTICLES = 3500;
+const MAX_PARTICLES = 10500;
 const BASE_ZOOM = 1.6;
 
 const COLOR_IN = "rgba(64, 120, 255, 0.55)";
@@ -151,10 +151,10 @@ function rebuildRoutes() {
     }
   }
 
-  const perParticle = Math.max(2000, totalMag / MAX_PARTICLES);
+  const perParticle = Math.max(700, totalMag / MAX_PARTICLES);
   const particles = [];
   routes.forEach((r, i) => {
-    const n = Math.max(1, Math.min(600, Math.round(r.mag / perParticle)));
+    const n = Math.max(1, Math.min(1800, Math.round(r.mag / perParticle)));
     for (let k = 0; k < n; k++) {
       particles.push({ r: i, t: Math.random() });
     }
@@ -259,10 +259,8 @@ function drawHoverRing(c) {
 }
 
 function frame() {
-  // fade previous frame -> particle trails
-  pCtx.globalCompositeOperation = "destination-out";
-  pCtx.fillStyle = "rgba(0, 0, 0, 0.22)";
-  pCtx.fillRect(0, 0, innerWidth, innerHeight);
+  // crisp dots, no fading trail
+  pCtx.clearRect(0, 0, innerWidth, innerHeight);
   pCtx.globalCompositeOperation = "lighter";
 
   const routes = state.routes;
@@ -277,7 +275,7 @@ function frame() {
     const y = u * u * r.p0.y + 2 * u * t * r.p1.y + t * t * r.p2.y;
     for (const k of KS) {
       const xx = x + k * W;
-      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(sprite, xx - 4, y - 4, 8, 8);
+      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(sprite, xx - 1.5, y - 1.5, 3, 3);
     }
   }
   requestAnimationFrame(frame);

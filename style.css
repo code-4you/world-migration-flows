@@ -18,6 +18,10 @@ html, body {
   pointer-events: none;
 }
 
+/* dots fly over the country circles, like the original */
+#circles { z-index: 1; }
+#particles { z-index: 2; }
+
 #topbar {
   position: absolute;
   top: 0;
