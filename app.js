@@ -65,7 +65,7 @@ const map = new maplibregl.Map({
   zoom: BASE_ZOOM,
   minZoom: 0.8,
   maxZoom: 5.5,
-  renderWorldCopies: false,
+  renderWorldCopies: true, // world repeats when panning east/west
   attributionControl: false,
 });
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
@@ -165,8 +165,16 @@ function rebuildRoutes() {
   pCtx.clearRect(0, 0, innerWidth, innerHeight);
 }
 
+/* Candidate world-copy offsets; content is drawn once per visible copy */
+const KS = [-2, -1, 0, 1, 2];
+
+function worldWidth() {
+  return map.project([180, 0]).x - map.project([-180, 0]).x;
+}
+
 /* Project route endpoints to screen px; arc control point perpendicular to the chord */
 function projectRoutes() {
+  state.worldW = worldWidth();
   for (const r of state.routes) {
     const p0 = map.project([r.from.lon, r.from.lat]);
     const p2 = map.project([unwrapLon(r.from.lon, r.to.lon), r.to.lat]);
@@ -200,6 +208,7 @@ function rebuildCircles() {
     maxAbs = Math.max(maxAbs, Math.abs(net));
   }
 
+  state.worldW = worldWidth();
   const zoomScale = Math.pow(2, (map.getZoom() - BASE_ZOOM) * 0.6);
   for (const [iso2, net] of entries) {
     const c = C[iso2];
@@ -216,29 +225,39 @@ function rebuildCircles() {
 
 function drawCircles() {
   cCtx.clearRect(0, 0, innerWidth, innerHeight);
+  const W = state.worldW || Infinity;
   for (const c of state.circles) {
     const selectedOne = c.iso2 === state.selected;
-    cCtx.beginPath();
-    cCtx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-    cCtx.fillStyle = c.gain ? COLOR_IN : COLOR_OUT;
-    cCtx.fill();
-    cCtx.lineWidth = selectedOne ? 2.5 : 1;
-    cCtx.strokeStyle = selectedOne
-      ? COLOR_SELECTED
-      : c.gain
-        ? COLOR_IN_STROKE
-        : COLOR_OUT_STROKE;
-    cCtx.stroke();
+    for (const k of KS) {
+      const x = c.x + k * W;
+      if (x + c.r < 0 || x - c.r > innerWidth) continue;
+      cCtx.beginPath();
+      cCtx.arc(x, c.y, c.r, 0, Math.PI * 2);
+      cCtx.fillStyle = c.gain ? COLOR_IN : COLOR_OUT;
+      cCtx.fill();
+      cCtx.lineWidth = selectedOne ? 2.5 : 1;
+      cCtx.strokeStyle = selectedOne
+        ? COLOR_SELECTED
+        : c.gain
+          ? COLOR_IN_STROKE
+          : COLOR_OUT_STROKE;
+      cCtx.stroke();
+    }
   }
   if (state.hover) drawHoverRing(state.hover);
 }
 
 function drawHoverRing(c) {
-  cCtx.beginPath();
-  cCtx.arc(c.x, c.y, c.r + 2, 0, Math.PI * 2);
-  cCtx.lineWidth = 2;
-  cCtx.strokeStyle = "rgba(255,255,255,0.9)";
-  cCtx.stroke();
+  const W = state.worldW || Infinity;
+  for (const k of KS) {
+    const x = c.x + k * W;
+    if (x + c.r < 0 || x - c.r > innerWidth) continue;
+    cCtx.beginPath();
+    cCtx.arc(x, c.y, c.r + 2, 0, Math.PI * 2);
+    cCtx.lineWidth = 2;
+    cCtx.strokeStyle = "rgba(255,255,255,0.9)";
+    cCtx.stroke();
+  }
 }
 
 function frame() {
@@ -249,6 +268,7 @@ function frame() {
   pCtx.globalCompositeOperation = "lighter";
 
   const routes = state.routes;
+  const W = state.worldW || Infinity;
   for (const p of state.particles) {
     const r = routes[p.r];
     if (!r || !r.p0) continue;
@@ -257,7 +277,10 @@ function frame() {
     const t = p.t, u = 1 - t;
     const x = u * u * r.p0.x + 2 * u * t * r.p1.x + t * t * r.p2.x;
     const y = u * u * r.p0.y + 2 * u * t * r.p1.y + t * t * r.p2.y;
-    pCtx.drawImage(sprite, x - 4, y - 4, 8, 8);
+    for (const k of KS) {
+      const xx = x + k * W;
+      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(sprite, xx - 4, y - 4, 8, 8);
+    }
   }
   requestAnimationFrame(frame);
 }
@@ -265,11 +288,15 @@ function frame() {
 /* ---------- interaction ---------- */
 
 function hitTest(mx, my) {
-  // smallest circle wins so islands inside big circles stay reachable
+  // smallest circle wins so islands inside big circles stay reachable;
+  // every visible world copy is tested
+  const W = state.worldW || Infinity;
   let best = null;
   for (const c of state.circles) {
-    const d = Math.hypot(mx - c.x, my - c.y);
-    if (d <= Math.max(c.r, 6) && (!best || c.r < best.r)) best = c;
+    for (const k of KS) {
+      const d = Math.hypot(mx - (c.x + k * W), my - c.y);
+      if (d <= Math.max(c.r, 6) && (!best || c.r < best.r)) best = c;
+    }
   }
   return best;
 }
@@ -399,8 +426,11 @@ async function init() {
     });
   select.addEventListener("change", () => setCountry(select.value));
 
-  // shareable state: ?p=<period>&c=<ISO2>, e.g. ?p=2010_2020&c=US
+  // shareable state: ?p=<period>&c=<ISO2>&lon=&lat=&z=, e.g. ?p=2010_2020&c=US
   const params = new URLSearchParams(location.search);
+  const lon = parseFloat(params.get("lon")), lat = parseFloat(params.get("lat")), z = parseFloat(params.get("z"));
+  if (Number.isFinite(lon) && Number.isFinite(lat)) map.setCenter([lon, lat]);
+  if (Number.isFinite(z)) map.setZoom(z);
   const p = params.get("p");
   const c = (params.get("c") || "").toUpperCase();
   const startPeriod = ALL_PERIODS().some((x) => x.id === p) ? p : DEFAULT_PERIOD;
