@@ -12,22 +12,27 @@ every period from 1990 to 2024.
 
 ## Data
 
-- **1990–2024:** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock)
-  (destination-and-origin matrix, revisions for 1990–2024, 230+ countries).
+- **1990–2020:** [Abel & Cohen bilateral migration flow estimates](https://doi.org/10.6084/m9.figshare.7731233)
+  (`da_pb_closed` method) — true gross flow estimates from demographic
+  accounting, so both directions of every corridor are visible (e.g. Mexico→US
+  *and* US→Mexico return migration).
+- **2020–2024:** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock),
+  gross flows approximated as bilateral stock increases (Abel-style flow
+  estimates for this period don't exist yet). Emigration from small countries
+  is under-counted in this period: deaths can shrink a migrant stock faster
+  than new arrivals grow it.
 - **1960–1990:** [UNU-CRIS imputed bilateral migration dataset](https://riks.cris.unu.edu/annual-bilateral-migration-data)
-  (Standaert & Rayp 2022, annual imputed bilateral stocks 1960–2020), used for
-  the 1960–1970, 1970–1980, and 1980–1990 periods in the "Earlier…" dropdown.
-- **Method:** net flow between two countries over a period is estimated as the
-  change in bilateral migrant stocks — the same approximation the original map
-  used. It ignores deaths and return/onward migration, so treat the numbers as
-  estimates, not counts. The two sources use different estimation pipelines, so
-  expect a methodological seam at 1990.
+  (Standaert & Rayp 2022), decade stock differences, used for the "Earlier…"
+  dropdown periods.
+- All numbers are model-based estimates, not counts; the three sources use
+  different pipelines, so expect methodological seams at 1990 and 2020.
 
 Regenerate the data files with:
 
 ```bash
-python scripts/process.py
-python scripts/process_early.py
+python scripts/process.py        # 2020-2024 + countries.json (UN stocks)
+python scripts/process_abel.py   # 1990-2020 (Abel & Cohen flows)
+python scripts/process_early.py  # 1960-1990 (UNU-CRIS stocks)
 ```
 
 (after downloading the source files into `raw/` — see the script docstrings).
@@ -64,8 +69,10 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
 ## Credits
 
 - Concept and original visualization: [Max Galka (Metrocosm)](https://web.archive.org/web/2018/http://metrocosm.com/)
-- Data: United Nations, Department of Economic and Social Affairs, Population
-  Division — International Migrant Stock 2024 (POP/DB/MIG/Stock/Rev.2024)
+- Data (1990–2020): Abel, G.J. & Cohen, J.E. (2019), "Bilateral international
+  migration flow estimates for 200 countries", *Scientific Data* (updated 2025)
+- Data (2020–2024): United Nations, Department of Economic and Social Affairs,
+  Population Division — International Migrant Stock 2024 (POP/DB/MIG/Stock/Rev.2024)
 - Data (1960–1990): Standaert, S. & G. Rayp (2022), "Where Did They Come From,
   Where Did They Go? Bridging the Gaps in Migration Data", UNU-CRIS
 - Basemap tiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)
