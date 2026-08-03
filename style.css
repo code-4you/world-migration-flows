@@ -138,6 +138,21 @@ html, body {
   #topbar h1 { display: none; }
 }
 
+/* big year watermark, shown only for single-year views (not decades) */
+#period-label {
+  display: none;
+  position: absolute;
+  right: 28px;
+  bottom: 96px;
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 9;
+}
+#period-label.show { display: block; }
+
 /* small transparent notice shown while a Meta-sourced year is selected */
 #source-note {
   display: none;

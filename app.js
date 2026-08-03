@@ -449,6 +449,10 @@ async function setPeriod(id) {
   // Meta-sourced years carry a small data-source notice on the map
   const metaYear = isYearId(id) && +id.slice(0, 4) >= 2019;
   document.getElementById("source-note").classList.toggle("show", metaYear);
+  // big year watermark for single-year views only (not decades)
+  const lbl = document.getElementById("period-label");
+  lbl.classList.toggle("show", isYearId(id));
+  lbl.textContent = isYearId(id) ? id.slice(0, 4) : "";
   rebuildRoutes();
   rebuildCircles(true);
 }
