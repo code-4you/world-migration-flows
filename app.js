@@ -19,8 +19,9 @@ const EARLY_PERIODS = [
   { id: "1980_1990", label: "1980–1990" },
 ];
 const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
-/* Single-year transitions from the UNU-CRIS annual series */
-const YEAR_MIN = 1960, YEAR_MAX = 2020;
+/* Single-year transitions: UNU-CRIS annual series to 2019, then Meta's
+ * measured flows for calendar years 2019-2022 (ids 2019_2020..2022_2023) */
+const YEAR_MIN = 1960, YEAR_MAX = 2023;
 const YEAR_PERIODS = Array.from({ length: YEAR_MAX - YEAR_MIN }, (_, i) => {
   const y = YEAR_MIN + i;
   return { id: `${y}_${y + 1}`, label: `${y}–${y + 1}` };

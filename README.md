@@ -23,11 +23,15 @@ every period from 1990 to 2024.
   estimates for this period don't exist yet). Emigration from small countries
   is under-counted in this period: deaths can shrink a migrant stock faster
   than new arrivals grow it.
-- **1960–1990 decades and all single years 1960–2020:** [UNU-CRIS imputed
+- **1960–1990 decades and single years 1960–2019:** [UNU-CRIS imputed
   bilateral migration dataset](https://riks.cris.unu.edu/annual-bilateral-migration-data)
-  (Standaert & Rayp 2022), stock differences over the decade or year. The
-  "Year…" dropdown and its play button (2s per year) step through every
-  year-to-year transition from 1960→1961 to 2019→2020.
+  (Standaert & Rayp 2022), stock differences over the decade or year.
+- **Single years 2019–2022:** [Meta's International Migration Flows](https://data.humdata.org/dataset/international-migration-flows)
+  ([Chi et al., PNAS 2025](https://www.pnas.org/doi/10.1073/pnas.2409418122)) —
+  measured monthly bilateral flow estimates from privacy-protected Facebook
+  data, weighted to population level, aggregated to calendar years. The
+  "Year…" dropdown and its play button (2s per year) step through every year
+  from 1960→1961 to 2022→2023.
 - All numbers are model-based estimates, not counts; the three sources use
   different pipelines, so expect methodological seams at 1990 and 2020.
 
@@ -38,6 +42,7 @@ python scripts/process.py        # 2020-2024 + countries.json (UN stocks)
 python scripts/process_abel.py   # 1990-2020 decades (Abel & Cohen flows)
 python scripts/process_early.py  # 1960-1990 decades (UNU-CRIS stocks)
 python scripts/process_yearly.py # single years 1960-2020 (UNU-CRIS stocks)
+python scripts/process_meta.py   # single years 2019-2022 (Meta measured flows)
 ```
 
 (after downloading the source files into `raw/` — see the script docstrings).
@@ -81,6 +86,8 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
   Population Division — International Migrant Stock 2024 (POP/DB/MIG/Stock/Rev.2024)
 - Data (1960–1990): Standaert, S. & G. Rayp (2022), "Where Did They Come From,
   Where Did They Go? Bridging the Gaps in Migration Data", UNU-CRIS
+- Data (years 2019–2022): Chi, G. et al. (2025), "Measuring global migration
+  flows using online data", *PNAS* — © Meta, CC BY 4.0, via HDX
 - Basemap tiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)
   contributors, © [CARTO](https://carto.com/attributions)
 - Map rendering: [MapLibre GL JS](https://maplibre.org/)

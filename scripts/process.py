@@ -125,7 +125,7 @@ def main():
     stocks = load_stocks(m49_to_iso2)
     print(f"{len(stocks)} destination countries loaded")
 
-    used = set()
+    used = {"XK"}  # Kosovo: absent from UN data but present in the Meta flows
     for t1, t2 in PERIODS:
         flows = build_period(stocks, t1, t2)
         used.update(flows.keys())
