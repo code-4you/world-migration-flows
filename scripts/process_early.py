@@ -78,6 +78,8 @@ NAME_FIXES = {
     "Vietnam; Dem. Rep.": "Viet Nam",
     "West Bank and Gaza": "Palestine, State of",
     "Yemen Arab Rep.": "Yemen",
+    "Yemen; Rep.": "Yemen",
+    "Pitcairn Islands": "Pitcairn",
     "Kosovo": "Kosovo",
     "British Virgin Islands": "Virgin Islands (British)",
     "Cote d'Ivoire": "Côte d'Ivoire",

@@ -19,8 +19,23 @@ const EARLY_PERIODS = [
   { id: "1980_1990", label: "1980–1990" },
 ];
 const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
+/* Single-year transitions from the UNU-CRIS annual series */
+const YEAR_MIN = 1960, YEAR_MAX = 2020;
+const YEAR_PERIODS = Array.from({ length: YEAR_MAX - YEAR_MIN }, (_, i) => {
+  const y = YEAR_MIN + i;
+  return { id: `${y}_${y + 1}`, label: `${y}–${y + 1}` };
+});
+function isYearId(id) {
+  const m = /^(\d{4})_(\d{4})$/.exec(id || "");
+  return !!m && +m[2] === +m[1] + 1;
+}
+function periodLabel(id) {
+  const p = ALL_PERIODS().find((x) => x.id === id) || YEAR_PERIODS.find((x) => x.id === id);
+  return p ? p.label : id.replace("_", "–");
+}
 const DEFAULT_PERIOD = "2020_2024";
-const PLAY_STEP_MS = 6000;
+const PLAY_STEP_MS = 6000; // decades
+const YEAR_STEP_MS = 2000; // years
 const MAX_PARTICLES = 7560;
 const BASE_ZOOM = 1.6;
 
@@ -137,6 +152,8 @@ function rebuildRoutes() {
   const flows = state.flows[state.period];
   const C = state.countries;
   const sel = state.selected;
+  const [py1, py2] = state.period.split("_").map(Number);
+  const span = Math.max(1, (py2 || 0) - (py1 || 0));
   const routes = [];
   let totalMag = 0;
 
@@ -146,8 +163,9 @@ function rebuildRoutes() {
       if (b === a || !C[b]) continue;
       if (sel && a !== sel && b !== sel) continue;
       const mag = flows[a][b]; // gross b -> a
-      // in the all-countries view, keep only substantial routes for legibility
-      if (mag < (sel ? 100 : 25000)) continue;
+      // in the all-countries view, keep only substantial routes for legibility;
+      // cutoffs scale with the period length (a year carries ~1/10 of a decade)
+      if (mag < (sel ? (span > 1 ? 100 : 50) : 2500 * span)) continue;
       const sprite = !sel ? SPRITES.flow : a === sel ? SPRITES.in : SPRITES.out;
       routes.push({ from: C[b], to: C[a], mag, sprite });
       totalMag += mag;
@@ -375,7 +393,7 @@ function tooltipHtml(c) {
   const C = state.countries;
   const sel = state.selected;
   const name = C[c.iso2].name;
-  const label = ALL_PERIODS().find((p) => p.id === state.period).label;
+  const label = periodLabel(state.period);
   const cls = c.net >= 0 ? "gain" : "loss";
 
   // hovering a partner while a country is selected: show the pair, both ways
@@ -424,6 +442,9 @@ async function setPeriod(id) {
   const era = document.getElementById("era-select");
   era.value = EARLY_PERIODS.some((p) => p.id === id) ? id : "";
   era.classList.toggle("active", era.value !== "");
+  const ys = document.getElementById("year-select");
+  ys.value = isYearId(id) ? id : "";
+  ys.classList.toggle("active", ys.value !== "");
   rebuildRoutes();
   rebuildCircles(true);
 }
@@ -440,23 +461,24 @@ async function setCountry(iso2) {
 }
 
 function stopPlay() {
-  state.playing = false;
+  state.playing = "";
   clearInterval(state.playTimer);
-  document.getElementById("play").innerHTML = "&#9654; Play";
+  document.getElementById("play").innerHTML = "&#9654;";
+  document.getElementById("play-years").innerHTML = "&#9654;";
 }
 
-/* Cycle through every period chronologically, looping forever */
-function startPlay() {
+/* Cycle through a period sequence chronologically, looping forever.
+ * btnId identifies which play button drives it (decades or years). */
+function startPlay(btnId, seq, stepMs) {
   stopPlay();
-  state.playing = true;
-  document.getElementById("play").innerHTML = "&#9646;&#9646; Stop";
-  const seq = ALL_PERIODS();
+  state.playing = btnId;
+  document.getElementById(btnId).innerHTML = "&#9646;&#9646;";
   let i = 0; // always start from the earliest period
   setPeriod(seq[i].id);
   state.playTimer = setInterval(() => {
     i = (i + 1) % seq.length;
     setPeriod(seq[i].id);
-  }, PLAY_STEP_MS);
+  }, stepMs);
 }
 
 /* ---------- init ---------- */
@@ -489,8 +511,24 @@ async function init() {
     setPeriod(eraSelect.value);
   });
 
+  const yearSelect = document.getElementById("year-select");
+  for (const p of YEAR_PERIODS) {
+    const o = document.createElement("option");
+    o.value = p.id;
+    o.textContent = p.id.slice(0, 4);
+    yearSelect.appendChild(o);
+  }
+  yearSelect.addEventListener("change", () => {
+    if (!yearSelect.value) return;
+    stopPlay();
+    setPeriod(yearSelect.value);
+  });
+
   document.getElementById("play").addEventListener("click", () =>
-    state.playing ? stopPlay() : startPlay()
+    state.playing === "play" ? stopPlay() : startPlay("play", ALL_PERIODS(), PLAY_STEP_MS)
+  );
+  document.getElementById("play-years").addEventListener("click", () =>
+    state.playing === "play-years" ? stopPlay() : startPlay("play-years", YEAR_PERIODS, YEAR_STEP_MS)
   );
 
   // click a country circle on the map to select it; click empty space to clear
@@ -524,9 +562,11 @@ async function init() {
   const lon = parseFloat(params.get("lon")), lat = parseFloat(params.get("lat")), z = parseFloat(params.get("z"));
   if (Number.isFinite(lon) && Number.isFinite(lat)) map.setCenter([lon, lat]);
   if (Number.isFinite(z)) map.setZoom(z);
-  const p = params.get("p");
+  let p = params.get("p");
+  if (/^\d{4}$/.test(p) && +p >= YEAR_MIN && +p < YEAR_MAX) p = `${p}_${+p + 1}`;
   const c = (params.get("c") || "").toUpperCase();
-  const startPeriod = ALL_PERIODS().some((x) => x.id === p) ? p : DEFAULT_PERIOD;
+  const valid = ALL_PERIODS().some((x) => x.id === p) || YEAR_PERIODS.some((x) => x.id === p);
+  const startPeriod = valid ? p : DEFAULT_PERIOD;
   await loadPeriod(startPeriod);
   if (c && state.countries[c]) state.selected = c;
   await setPeriod(startPeriod);

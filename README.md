@@ -23,9 +23,11 @@ every period from 1990 to 2024.
   estimates for this period don't exist yet). Emigration from small countries
   is under-counted in this period: deaths can shrink a migrant stock faster
   than new arrivals grow it.
-- **1960–1990:** [UNU-CRIS imputed bilateral migration dataset](https://riks.cris.unu.edu/annual-bilateral-migration-data)
-  (Standaert & Rayp 2022), decade stock differences, used for the "Earlier…"
-  dropdown periods.
+- **1960–1990 decades and all single years 1960–2020:** [UNU-CRIS imputed
+  bilateral migration dataset](https://riks.cris.unu.edu/annual-bilateral-migration-data)
+  (Standaert & Rayp 2022), stock differences over the decade or year. The
+  "Year…" dropdown and its play button (2s per year) step through every
+  year-to-year transition from 1960→1961 to 2019→2020.
 - All numbers are model-based estimates, not counts; the three sources use
   different pipelines, so expect methodological seams at 1990 and 2020.
 
@@ -33,8 +35,9 @@ Regenerate the data files with:
 
 ```bash
 python scripts/process.py        # 2020-2024 + countries.json (UN stocks)
-python scripts/process_abel.py   # 1990-2020 (Abel & Cohen flows)
-python scripts/process_early.py  # 1960-1990 (UNU-CRIS stocks)
+python scripts/process_abel.py   # 1990-2020 decades (Abel & Cohen flows)
+python scripts/process_early.py  # 1960-1990 decades (UNU-CRIS stocks)
+python scripts/process_yearly.py # single years 1960-2020 (UNU-CRIS stocks)
 ```
 
 (after downloading the source files into `raw/` — see the script docstrings).
