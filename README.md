@@ -31,7 +31,10 @@ every period from 1990 to 2024.
   measured monthly bilateral flow estimates from privacy-protected Facebook
   data, weighted to population level, aggregated to calendar years. The
   "Year…" dropdown and its play button (2s per year) step through every year
-  from 1960→1961 to 2022→2023.
+  from 1960→1961 to 2022→2023. Caveats: countries where Facebook is banned
+  (notably China and Iran) are absent in the 2019–2022 years, "origin" means
+  previous country of residence rather than country of birth, and small flows
+  carry differential-privacy noise.
 - All numbers are model-based estimates, not counts; the three sources use
   different pipelines, so expect methodological seams at 1990 and 2020.
 
