@@ -19,9 +19,9 @@ const EARLY_PERIODS = [
   { id: "1980_1990", label: "1980–1990" },
 ];
 const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
-/* Single-year transitions: UNU-CRIS annual series to 2019, then Meta's
- * measured flows for calendar years 2019-2022 (ids 2019_2020..2022_2023) */
-const YEAR_MIN = 1960, YEAR_MAX = 2023;
+/* Single-year transitions: UNU-CRIS annual series 1960-1989, then the
+ * Gaskin & Abel deep-learning estimates for 1990-2023 */
+const YEAR_MIN = 1960, YEAR_MAX = 2024;
 const YEAR_PERIODS = Array.from({ length: YEAR_MAX - YEAR_MIN }, (_, i) => {
   const y = YEAR_MIN + i;
   return { id: `${y}_${y + 1}`, label: `${y}–${y + 1}` };
@@ -446,9 +446,9 @@ async function setPeriod(id) {
   const ys = document.getElementById("year-select");
   ys.value = isYearId(id) ? id : "";
   ys.classList.toggle("active", ys.value !== "");
-  // Meta-sourced years carry a small data-source notice on the map
-  const metaYear = isYearId(id) && +id.slice(0, 4) >= 2019;
-  document.getElementById("source-note").classList.toggle("show", metaYear);
+  // deep-learning-sourced views carry a small data-source notice on the map
+  const gaskinView = (isYearId(id) && +id.slice(0, 4) >= 1990) || id === "2020_2024";
+  document.getElementById("source-note").classList.toggle("show", gaskinView);
   // big year watermark for single-year views only (not decades)
   const lbl = document.getElementById("period-label");
   lbl.classList.toggle("show", isYearId(id));

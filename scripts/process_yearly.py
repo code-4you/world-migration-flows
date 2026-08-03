@@ -1,11 +1,13 @@
-"""Build YEARLY gross migration flow JSONs (1960->2020) from the UNU-CRIS
+"""Build YEARLY gross migration flow JSONs (1960->1990) from the UNU-CRIS
 imputed bilateral migration dataset (Standaert & Rayp, 2022).
 
 Input:  raw/unu/migration_imputed_RIKS_dec2021.csv (annual bilateral stocks)
-Output: data/flows_<y>_<y+1>.json for y in 1960..2019, same format as the
+Output: data/flows_<y>_<y+1>.json for y in 1960..1989, same format as the
         decade files: flows[A][B] = stock increase of B-born living in A over
         the year (clamped at 0); flows[A][A] = A's total net.
 
+Years from 1990 on come from process_gaskin.py instead — do not extend Y1
+past 1990 or this script will overwrite those better files.
 Country-name matching is shared with process_early.py.
 """
 import csv
@@ -19,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "..", "raw")
 OUT = os.path.join(HERE, "..", "data")
 
-Y0, Y1 = 1960, 2020  # inclusive stock years; transitions Y0->Y0+1 .. Y1-1->Y1
+Y0, Y1 = 1960, 1990  # inclusive stock years; transitions Y0->Y0+1 .. Y1-1->Y1
 NYEARS = Y1 - Y0 + 1
 PAIR_THRESHOLD = 50  # yearly flows are ~1/10 of decade ones
 

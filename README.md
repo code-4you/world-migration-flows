@@ -18,34 +18,33 @@ every period from 1990 to 2024.
   (`da_pb_closed` method) — true gross flow estimates from demographic
   accounting, so both directions of every corridor are visible (e.g. Mexico→US
   *and* US→Mexico return migration).
-- **2020–2024:** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock),
-  gross flows approximated as bilateral stock increases (Abel-style flow
-  estimates for this period don't exist yet). Emigration from small countries
-  is under-counted in this period: deaths can shrink a migrant stock faster
-  than new arrivals grow it.
-- **1960–1990 decades and single years 1960–2019:** [UNU-CRIS imputed
+- **2020–2024 (fallback):** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock)
+  is used for `countries.json` and can regenerate a stock-difference version
+  of the 2020–2024 period, but the shipped file comes from the Gaskin & Abel
+  yearly estimates (2020–2023 summed).
+- **1960–1990 decades and single years 1960–1989:** [UNU-CRIS imputed
   bilateral migration dataset](https://riks.cris.unu.edu/annual-bilateral-migration-data)
   (Standaert & Rayp 2022), stock differences over the decade or year.
-- **Single years 2019–2022:** [Meta's International Migration Flows](https://data.humdata.org/dataset/international-migration-flows)
-  ([Chi et al., PNAS 2025](https://www.pnas.org/doi/10.1073/pnas.2409418122)) —
-  measured monthly bilateral flow estimates from privacy-protected Facebook
-  data, weighted to population level, aggregated to calendar years. The
-  "Year…" dropdown and its play button (2s per year) step through every year
-  from 1960→1961 to 2022→2023. Caveats: countries where Facebook is banned
-  (notably China and Iran) are absent in the 2019–2022 years, "origin" means
-  previous country of residence rather than country of birth, and small flows
-  carry differential-privacy noise.
+- **Single years 1990–2023 and the 2020–2024 period:** [Gaskin & Abel
+  deep-learning estimates](https://huggingface.co/datasets/ThGaskin/Migration_flows)
+  ("[Deep learning four decades of human migration](https://arxiv.org/abs/2506.22821)",
+  GPL-3.0) — annual bilateral flows by previous residence for ~230 countries,
+  from a neural network integrating UN census stocks, national statistics,
+  QuantMig, and [Meta's Facebook-based flow measurements](https://data.humdata.org/dataset/international-migration-flows)
+  (Chi et al., PNAS 2025). Unlike the raw Meta data, China and Iran are
+  covered. The "Year…" dropdown and its play button (2s per year) step
+  through every year from 1960→1961 to 2023→2024.
 - All numbers are model-based estimates, not counts; the three sources use
   different pipelines, so expect methodological seams at 1990 and 2020.
 
 Regenerate the data files with:
 
 ```bash
-python scripts/process.py        # 2020-2024 + countries.json (UN stocks)
+python scripts/process.py        # countries.json + UN stock fallback (run first)
 python scripts/process_abel.py   # 1990-2020 decades (Abel & Cohen flows)
 python scripts/process_early.py  # 1960-1990 decades (UNU-CRIS stocks)
-python scripts/process_yearly.py # single years 1960-2020 (UNU-CRIS stocks)
-python scripts/process_meta.py   # single years 2019-2022 (Meta measured flows)
+python scripts/process_yearly.py # single years 1960-1989 (UNU-CRIS stocks)
+python scripts/process_gaskin.py # single years 1990-2023 + 2020-2024 period (run last)
 ```
 
 (after downloading the source files into `raw/` — see the script docstrings).
@@ -89,8 +88,11 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
   Population Division — International Migrant Stock 2024 (POP/DB/MIG/Stock/Rev.2024)
 - Data (1960–1990): Standaert, S. & G. Rayp (2022), "Where Did They Come From,
   Where Did They Go? Bridging the Gaps in Migration Data", UNU-CRIS
-- Data (years 2019–2022): Chi, G. et al. (2025), "Measuring global migration
-  flows using online data", *PNAS* — © Meta, CC BY 4.0, via HDX
+- Data (years 1990–2023, period 2020–2024): Gaskin, T. & G.J. Abel (2025),
+  "Deep learning four decades of human migration" (arXiv:2506.22821), GPL-3.0
+- Data (model input we previously used directly): Chi, G. et al. (2025),
+  "Measuring global migration flows using online data", *PNAS* — © Meta,
+  CC BY 4.0, via HDX
 - Basemap tiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)
   contributors, © [CARTO](https://carto.com/attributions)
 - Map rendering: [MapLibre GL JS](https://maplibre.org/)
