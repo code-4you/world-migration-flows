@@ -474,7 +474,8 @@ function startPlay(btnId, seq, stepMs) {
   stopPlay();
   state.playing = btnId;
   document.getElementById(btnId).innerHTML = "&#9646;&#9646;";
-  let i = 0; // always start from the earliest period
+  // resume from the period currently shown if it's part of this sequence
+  let i = Math.max(0, seq.findIndex((p) => p.id === state.period));
   setPeriod(seq[i].id);
   state.playTimer = setInterval(() => {
     i = (i + 1) % seq.length;
