@@ -526,6 +526,10 @@ async function init() {
     setPeriod(yearSelect.value);
   });
 
+  document.getElementById("mobile-continue").addEventListener("click", () =>
+    document.getElementById("mobile-warning").classList.add("dismissed")
+  );
+
   document.getElementById("play").addEventListener("click", () =>
     state.playing === "play" ? stopPlay() : startPlay("play", ALL_PERIODS(), PLAY_STEP_MS)
   );
