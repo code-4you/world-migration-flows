@@ -446,6 +446,9 @@ async function setPeriod(id) {
   const ys = document.getElementById("year-select");
   ys.value = isYearId(id) ? id : "";
   ys.classList.toggle("active", ys.value !== "");
+  // Meta-sourced years carry a small data-source notice on the map
+  const metaYear = isYearId(id) && +id.slice(0, 4) >= 2019;
+  document.getElementById("source-note").classList.toggle("show", metaYear);
   rebuildRoutes();
   rebuildCircles(true);
 }

@@ -138,6 +138,25 @@ html, body {
   #topbar h1 { display: none; }
 }
 
+/* small transparent notice shown while a Meta-sourced year is selected */
+#source-note {
+  display: none;
+  position: absolute;
+  right: 12px;
+  bottom: 34px;
+  max-width: 300px;
+  padding: 7px 10px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(10, 10, 12, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 9;
+}
+#source-note.show { display: block; }
+
 /* phone-size warning: shown via media query, dismissed with the button */
 #mobile-warning {
   display: none;
