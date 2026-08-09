@@ -6,7 +6,12 @@ whose original site is no longer online.
 
 **Live map: <https://code-4you.github.io/world-migration-flows/>**
 
-Animated particles show estimated net migration flows between countries.
+Animated particles show estimated migration flows between countries. An
+**Events** dropdown replays named migration episodes — the Syrian refugee
+crisis, the Gastarbeiter era, the fall of the Soviet Union and more — each
+auto-playing its years with the affected countries highlighted, and each
+shareable via `?e=<event>` links (e.g. `?e=ukraine`). Its play button tours
+every event in sequence.
 Circles show each country's total net migration: **blue = net gain, red = net loss**.
 Hover a circle for numbers. Pick a country (USA / China / Germany / Australia, or any
 country from the dropdown) to isolate its flows, and press **Play** to step through

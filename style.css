@@ -138,6 +138,30 @@ html, body {
   #topbar h1 { display: none; }
 }
 
+/* event overlay: bigger than the year watermark, stacked above it */
+#event-label {
+  display: none;
+  position: absolute;
+  right: 28px;
+  bottom: 168px;
+  text-align: right;
+  pointer-events: none;
+  z-index: 9;
+}
+#event-label.show { display: block; }
+#event-label .t {
+  font-size: 54px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: rgba(255, 206, 58, 0.55);
+}
+#event-label .y {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* big year watermark, shown only for single-year views (not decades) */
 #period-label {
   display: none;

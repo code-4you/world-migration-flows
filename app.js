@@ -34,6 +34,29 @@ function periodLabel(id) {
   const p = ALL_PERIODS().find((x) => x.id === id) || YEAR_PERIODS.find((x) => x.id === id);
   return p ? p.label : id.replace("_", "–");
 }
+/* Named migration events for the Events dropdown: year range (start years of
+ * yearly transitions) and the countries the view focuses on */
+const EVENTS = [
+  { id: "gastarbeiter", name: "Gastarbeiter era", y0: 1960, y1: 1973, c: ["DE"] },
+  { id: "bangladesh", name: "Bangladesh Liberation War", y0: 1970, y1: 1972, c: ["BD"] },
+  { id: "indochina", name: "Indochina refugee crisis", y0: 1975, y1: 1985, c: ["VN", "KH", "LA"] },
+  { id: "afghan-soviet", name: "Soviet–Afghan War", y0: 1979, y1: 1989, c: ["AF"] },
+  { id: "mariel", name: "Mariel boatlift", y0: 1979, y1: 1981, c: ["CU"] },
+  { id: "soviet-collapse", name: "Fall of the Soviet Union", y0: 1990, y1: 1996, c: ["RU", "UA", "KZ"] },
+  { id: "yugoslav", name: "Yugoslav Wars", y0: 1991, y1: 1996, c: ["BA", "HR", "RS"] },
+  { id: "rwanda", name: "Rwandan genocide", y0: 1993, y1: 1997, c: ["RW"] },
+  { id: "eu-enlargement", name: "EU eastern enlargement", y0: 2004, y1: 2012, c: ["PL", "RO"] },
+  { id: "syria", name: "Syrian refugee crisis", y0: 2011, y1: 2017, c: ["SY"] },
+  { id: "venezuela", name: "Venezuelan exodus", y0: 2014, y1: 2022, c: ["VE"] },
+  { id: "covid", name: "COVID-19 freeze", y0: 2019, y1: 2021, c: [] },
+  { id: "ukraine", name: "Russian invasion of Ukraine", y0: 2021, y1: 2023, c: ["UA"] },
+];
+const eventYearIds = (ev) => {
+  const ids = [];
+  for (let y = ev.y0; y <= ev.y1; y++) ids.push(`${y}_${y + 1}`);
+  return ids;
+};
+
 const DEFAULT_PERIOD = "2020_2024";
 const PLAY_STEP_MS = 6000; // decades
 const YEAR_STEP_MS = 2000; // years
@@ -49,6 +72,8 @@ const COLOR_SELECTED = "rgba(255, 206, 58, 0.95)";
 const state = {
   period: DEFAULT_PERIOD,
   selected: "", // ISO2 or "" for all
+  event: null, // active EVENTS entry, or null
+  eventFocus: [], // ISO2 list the active event highlights
   playing: false,
   playTimer: null,
   flows: {}, // periodId -> flows json
@@ -158,16 +183,26 @@ function rebuildRoutes() {
   const routes = [];
   let totalMag = 0;
 
+  const focus = state.eventFocus; // multi-country focus from an active event
+  const focused = !sel && focus.length > 0;
   for (const a in flows) {
     if (!C[a]) continue;
     for (const b in flows[a]) {
       if (b === a || !C[b]) continue;
       if (sel && a !== sel && b !== sel) continue;
+      if (focused && !focus.includes(a) && !focus.includes(b)) continue;
       const mag = flows[a][b]; // gross b -> a
       // in the all-countries view, keep only substantial routes for legibility;
       // cutoffs scale with the period length (a year carries ~1/10 of a decade)
-      if (mag < (sel ? (span > 1 ? 100 : 50) : 1000 * span)) continue;
-      const sprite = !sel ? SPRITES.flow : a === sel ? SPRITES.in : SPRITES.out;
+      const min = sel || focused ? (span > 1 ? 100 : 50) : 1000 * span;
+      if (mag < min) continue;
+      let sprite = SPRITES.flow;
+      if (sel) sprite = a === sel ? SPRITES.in : SPRITES.out;
+      else if (focused) {
+        const toFocus = focus.includes(a), fromFocus = focus.includes(b);
+        if (toFocus && !fromFocus) sprite = SPRITES.in;
+        else if (fromFocus && !toFocus) sprite = SPRITES.out;
+      }
       routes.push({ from: C[b], to: C[a], mag, sprite });
       totalMag += mag;
     }
@@ -300,7 +335,7 @@ function drawCircles() {
   cCtx.clearRect(0, 0, innerWidth, innerHeight);
   const W = state.worldW || Infinity;
   for (const c of state.circles) {
-    const selectedOne = c.iso2 === state.selected;
+    const selectedOne = c.iso2 === state.selected || state.eventFocus.includes(c.iso2);
     const r = Math.max(0, c.r); // a negative radius would throw and kill drawing
     for (const k of KS) {
       const x = c.x + k * W;
@@ -446,6 +481,8 @@ async function setPeriod(id) {
   const ys = document.getElementById("year-select");
   ys.value = isYearId(id) ? id : "";
   ys.classList.toggle("active", ys.value !== "");
+  document.getElementById("event-select").classList.toggle("active", !!state.event);
+  if (!state.event) syncUrl();
   // deep-learning-sourced views carry a small data-source notice on the map
   const gaskinView = (isYearId(id) && +id.slice(0, 4) >= 1990) || id === "2020_2024";
   document.getElementById("source-note").classList.toggle("show", gaskinView);
@@ -458,14 +495,98 @@ async function setPeriod(id) {
 }
 
 async function setCountry(iso2) {
+  clearEvent();
   if (iso2 && !(state.flows[state.period] || {})[iso2]) iso2 = "";
   state.selected = iso2;
   document.getElementById("country-select").value = iso2;
-  document.getElementById("legend-flow").innerHTML = iso2
-    ? `<i class="dot in"></i> arriving &nbsp;<i class="dot out"></i> leaving`
-    : `<i class="dot flow"></i> migration flow`;
+  updateLegend();
   rebuildRoutes();
   rebuildCircles(true);
+  syncUrl();
+}
+
+function updateLegend() {
+  const directional = state.selected || state.eventFocus.length;
+  document.getElementById("legend-flow").innerHTML = directional
+    ? `<i class="dot in"></i> arriving &nbsp;<i class="dot out"></i> leaving`
+    : `<i class="dot flow"></i> migration flow`;
+}
+
+/* keep the address bar shareable: ?e=<event> or ?c=<country>&p=<period> */
+function syncUrl() {
+  const q = new URLSearchParams();
+  if (state.event) q.set("e", state.event.id);
+  else {
+    if (state.selected) q.set("c", state.selected);
+    q.set("p", state.period);
+  }
+  history.replaceState(null, "", "?" + q.toString());
+}
+
+/* ---------- events ---------- */
+
+function clearEvent() {
+  if (!state.event) return;
+  state.event = null;
+  state.eventFocus = [];
+  document.getElementById("event-select").value = "";
+  document.getElementById("event-label").classList.remove("show");
+  updateLegend();
+}
+
+/* Point the view at an event (focus countries + overlay), without playback */
+function applyEvent(ev) {
+  state.event = ev;
+  state.eventFocus = ev.c.slice();
+  state.selected = "";
+  document.getElementById("country-select").value = "";
+  document.getElementById("event-select").value = ev.id;
+  const lbl = document.getElementById("event-label");
+  lbl.innerHTML = `<div class="t"></div><div class="y"></div>`;
+  lbl.querySelector(".t").textContent = ev.name;
+  lbl.querySelector(".y").textContent = `${ev.y0}–${ev.y1 + 1}`;
+  lbl.classList.add("show");
+  updateLegend();
+}
+
+/* User picked an event: focus it and loop through its years */
+function setEvent(id) {
+  const ev = EVENTS.find((x) => x.id === id);
+  if (!ev) return;
+  stopPlay();
+  applyEvent(ev);
+  state.playing = "play-events";
+  document.getElementById("play-events").innerHTML = "&#9646;&#9646;";
+  const ids = eventYearIds(ev);
+  let i = 0;
+  setPeriod(ids[i]);
+  state.playTimer = setInterval(() => {
+    i = (i + 1) % ids.length;
+    setPeriod(ids[i]);
+  }, YEAR_STEP_MS);
+  syncUrl();
+}
+
+/* Tour: play every event's year range in sequence, looping forever */
+function startEventsTour() {
+  stopPlay();
+  state.playing = "play-events";
+  document.getElementById("play-events").innerHTML = "&#9646;&#9646;";
+  const flat = EVENTS.flatMap((ev) => eventYearIds(ev).map((pid) => ({ ev, pid })));
+  let i = 0;
+  const step = () => {
+    const { ev, pid } = flat[i];
+    if (state.event !== ev) {
+      applyEvent(ev);
+      syncUrl();
+    }
+    setPeriod(pid);
+  };
+  step();
+  state.playTimer = setInterval(() => {
+    i = (i + 1) % flat.length;
+    step();
+  }, YEAR_STEP_MS);
 }
 
 function stopPlay() {
@@ -473,6 +594,7 @@ function stopPlay() {
   clearInterval(state.playTimer);
   document.getElementById("play").innerHTML = "&#9654;";
   document.getElementById("play-years").innerHTML = "&#9654;";
+  document.getElementById("play-events").innerHTML = "&#9654;";
 }
 
 /* Cycle through a period sequence chronologically, looping forever.
@@ -502,10 +624,34 @@ async function init() {
     b.dataset.period = p.id;
     b.addEventListener("click", () => {
       stopPlay();
+      clearEvent();
       setPeriod(p.id);
     });
     periodBar.appendChild(b);
   }
+
+  const eventSelect = document.getElementById("event-select");
+  for (const ev of EVENTS) {
+    const o = document.createElement("option");
+    o.value = ev.id;
+    o.textContent = `${ev.name} (${ev.y0}–${ev.y1 + 1})`;
+    eventSelect.appendChild(o);
+  }
+  eventSelect.addEventListener("change", () => {
+    if (eventSelect.value) setEvent(eventSelect.value);
+    else {
+      stopPlay();
+      clearEvent();
+      syncUrl();
+      rebuildRoutes();
+      rebuildCircles(true);
+    }
+  });
+  document.getElementById("play-events").addEventListener("click", () => {
+    if (state.playing === "play-events") stopPlay();
+    else if (eventSelect.value) setEvent(eventSelect.value);
+    else startEventsTour();
+  });
 
   const eraSelect = document.getElementById("era-select");
   for (const p of EARLY_PERIODS) {
@@ -517,6 +663,7 @@ async function init() {
   eraSelect.addEventListener("change", () => {
     if (!eraSelect.value) return;
     stopPlay();
+    clearEvent();
     setPeriod(eraSelect.value);
   });
 
@@ -530,6 +677,7 @@ async function init() {
   yearSelect.addEventListener("change", () => {
     if (!yearSelect.value) return;
     stopPlay();
+    clearEvent();
     setPeriod(yearSelect.value);
   });
 
@@ -537,12 +685,20 @@ async function init() {
     document.getElementById("mobile-warning").classList.add("dismissed")
   );
 
-  document.getElementById("play").addEventListener("click", () =>
-    state.playing === "play" ? stopPlay() : startPlay("play", ALL_PERIODS(), PLAY_STEP_MS)
-  );
-  document.getElementById("play-years").addEventListener("click", () =>
-    state.playing === "play-years" ? stopPlay() : startPlay("play-years", YEAR_PERIODS, YEAR_STEP_MS)
-  );
+  document.getElementById("play").addEventListener("click", () => {
+    if (state.playing === "play") stopPlay();
+    else {
+      clearEvent();
+      startPlay("play", ALL_PERIODS(), PLAY_STEP_MS);
+    }
+  });
+  document.getElementById("play-years").addEventListener("click", () => {
+    if (state.playing === "play-years") stopPlay();
+    else {
+      clearEvent();
+      startPlay("play-years", YEAR_PERIODS, YEAR_STEP_MS);
+    }
+  });
 
   // click a country circle on the map to select it; click empty space to clear
   let downAt = null;
@@ -581,9 +737,15 @@ async function init() {
   const valid = ALL_PERIODS().some((x) => x.id === p) || YEAR_PERIODS.some((x) => x.id === p);
   const startPeriod = valid ? p : DEFAULT_PERIOD;
   await loadPeriod(startPeriod);
-  if (c && state.countries[c]) state.selected = c;
-  await setPeriod(startPeriod);
-  if (state.selected) await setCountry(state.selected);
+  const evParam = params.get("e");
+  if (evParam && EVENTS.some((x) => x.id === evParam)) {
+    await setPeriod(startPeriod);
+    setEvent(evParam); // event links open playing
+  } else {
+    if (c && state.countries[c]) state.selected = c;
+    await setPeriod(startPeriod);
+    if (state.selected) await setCountry(state.selected);
+  }
 
   map.on("move", () => {
     projectRoutes();
