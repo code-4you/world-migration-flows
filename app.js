@@ -483,7 +483,9 @@ async function setPeriod(id) {
   ys.value = isYearId(id) ? id : "";
   ys.classList.toggle("active", ys.value !== "");
   document.getElementById("event-select").classList.toggle("active", !!state.event);
-  if (!state.event) syncUrl();
+  // never touch the URL mid-playback: rapid replaceState calls can interrupt
+  // map dragging; the URL is synced once when playback stops instead
+  if (!state.event && !state.playing) syncUrl();
   // deep-learning-sourced views carry a small data-source notice on the map
   const gaskinView = (isYearId(id) && +id.slice(0, 4) >= 1990) || id === "2020_2024";
   document.getElementById("source-note").classList.toggle("show", gaskinView);
@@ -596,11 +598,13 @@ function startEventsTour() {
 }
 
 function stopPlay() {
+  const wasPlaying = state.playing;
   state.playing = "";
   clearInterval(state.playTimer);
   document.getElementById("play").innerHTML = "&#9654;";
   document.getElementById("play-years").innerHTML = "&#9654;";
   document.getElementById("play-events").innerHTML = "&#9654;";
+  if (wasPlaying) syncUrl(); // land the URL on wherever playback stopped
 }
 
 /* Cycle through a period sequence chronologically, looping forever.
