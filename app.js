@@ -513,7 +513,8 @@ function updateLegend() {
     : `<i class="dot flow"></i> migration flow`;
 }
 
-/* keep the address bar shareable: ?e=<event> or ?c=<country>&p=<period> */
+/* keep the address bar shareable: ?e=<event> or ?c=<country>&p=<period>,
+ * and the document title descriptive for search engines */
 function syncUrl() {
   const q = new URLSearchParams();
   if (state.event) q.set("e", state.event.id);
@@ -522,6 +523,10 @@ function syncUrl() {
     q.set("p", state.period);
   }
   history.replaceState(null, "", "?" + q.toString());
+  if (state.event) document.title = `${state.event.name} — World Migration Flows`;
+  else if (state.selected && state.countries[state.selected])
+    document.title = `${state.countries[state.selected].name} migration ${periodLabel(state.period)} — World Migration Flows`;
+  else document.title = "World Migration Flows";
 }
 
 /* ---------- events ---------- */

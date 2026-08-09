@@ -76,7 +76,7 @@ html, body {
 #legend {
   position: absolute;
   left: 12px;
-  bottom: 34px;
+  bottom: 48px;
   display: flex;
   gap: 14px;
   font-size: 12px;
@@ -132,6 +132,23 @@ html, body {
   z-index: 10;
 }
 
+/* crawlable event links, tucked above the credits bar */
+#explore {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  padding: 3px 12px;
+  font-size: 10.5px;
+  color: #777;
+  background: rgba(10, 10, 12, 0.72);
+  z-index: 10;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+#explore a { color: #999; text-decoration: none; }
+#explore a:hover { color: #ffce3a; }
+
 #credits a { color: #aaa; }
 
 @media (max-width: 720px) {
@@ -182,7 +199,7 @@ html, body {
   display: none;
   position: absolute;
   right: 12px;
-  bottom: 34px;
+  bottom: 48px;
   max-width: 300px;
   padding: 7px 10px;
   font-size: 11.5px;
