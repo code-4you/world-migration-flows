@@ -37,7 +37,7 @@ function periodLabel(id) {
 const DEFAULT_PERIOD = "2020_2024";
 const PLAY_STEP_MS = 6000; // decades
 const YEAR_STEP_MS = 2000; // years
-const MAX_PARTICLES = 7560;
+const MAX_PARTICLES = 6800;
 const BASE_ZOOM = 1.6;
 
 const COLOR_IN = "rgba(64, 120, 255, 0.55)";
@@ -166,14 +166,14 @@ function rebuildRoutes() {
       const mag = flows[a][b]; // gross b -> a
       // in the all-countries view, keep only substantial routes for legibility;
       // cutoffs scale with the period length (a year carries ~1/10 of a decade)
-      if (mag < (sel ? (span > 1 ? 100 : 50) : 2500 * span)) continue;
+      if (mag < (sel ? (span > 1 ? 100 : 50) : 1000 * span)) continue;
       const sprite = !sel ? SPRITES.flow : a === sel ? SPRITES.in : SPRITES.out;
       routes.push({ from: C[b], to: C[a], mag, sprite });
       totalMag += mag;
     }
   }
 
-  const perParticle = Math.max(972, totalMag / MAX_PARTICLES);
+  const perParticle = Math.max(1080, totalMag / MAX_PARTICLES);
   const particles = [];
   routes.forEach((r, i) => {
     const n = Math.max(1, Math.min(1800, Math.round(r.mag / perParticle)));
@@ -351,7 +351,7 @@ function frame() {
     const y = u * u * r.p0.y + 2 * u * t * r.p1.y + t * t * r.p2.y + r.ny * p.o;
     for (const k of KS) {
       const xx = x + k * W;
-      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(r.sprite, xx - 2.07, y - 2.07, 4.14, 4.14);
+      if (xx > -10 && xx < innerWidth + 10) pCtx.drawImage(r.sprite, xx - 2.28, y - 2.28, 4.55, 4.55);
     }
   }
   requestAnimationFrame(frame);
