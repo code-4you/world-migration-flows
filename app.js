@@ -736,6 +736,25 @@ async function init() {
     });
   select.addEventListener("change", () => setCountry(select.value));
 
+  // Explore menu: crawlable links to events and per-country yearly playback
+  const menu = document.getElementById("explore-menu");
+  document.getElementById("explore-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.classList.toggle("open");
+  });
+  document.addEventListener("click", (e) => {
+    if (!menu.contains(e.target) && e.target.id !== "explore-btn") menu.classList.remove("open");
+  });
+  const cc = document.getElementById("explore-countries");
+  Object.entries(state.countries)
+    .sort((a, b) => a[1].name.localeCompare(b[1].name))
+    .forEach(([iso2, c]) => {
+      const a = document.createElement("a");
+      a.href = `?c=${iso2}&play=years`;
+      a.textContent = c.name;
+      cc.appendChild(a);
+    });
+
   // shareable state: ?p=<period>&c=<ISO2>&lon=&lat=&z=, e.g. ?p=2010_2020&c=US
   const params = new URLSearchParams(location.search);
   const lon = parseFloat(params.get("lon")), lat = parseFloat(params.get("lat")), z = parseFloat(params.get("z"));
@@ -754,7 +773,15 @@ async function init() {
   } else {
     if (c && state.countries[c]) state.selected = c;
     await setPeriod(startPeriod);
-    if (state.selected) await setCountry(state.selected);
+    if (state.selected) {
+      const sel = state.selected;
+      await setCountry(sel);
+      // ?c=XX&play=years: replay this country's history year by year
+      if (params.get("play") === "years") {
+        startPlay("play-years", YEAR_PERIODS, YEAR_STEP_MS);
+        state.selected = sel; // startPlay must not drop the selection
+      }
+    }
   }
 
   map.on("move", () => {

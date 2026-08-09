@@ -53,6 +53,7 @@
       </select>
       <span id="period-buttons" class="group"></span>
     </div>
+    <button id="explore-btn" title="Browse events and countries">Explore &#9662;</button>
   </header>
 
   <div id="event-label"></div>
@@ -80,22 +81,28 @@
     <span id="legend-flow"><i class="dot flow"></i> migration flow</span>
   </div>
 
-  <nav id="explore">
-    Explore:
-    <a href="?e=gastarbeiter">Gastarbeiter era</a> &middot;
-    <a href="?e=bangladesh">Bangladesh Liberation War</a> &middot;
-    <a href="?e=indochina">Indochina refugee crisis</a> &middot;
-    <a href="?e=afghan-soviet">Soviet&ndash;Afghan War</a> &middot;
-    <a href="?e=mariel">Mariel boatlift</a> &middot;
-    <a href="?e=soviet-collapse">Fall of the Soviet Union</a> &middot;
-    <a href="?e=yugoslav">Yugoslav Wars</a> &middot;
-    <a href="?e=rwanda">Rwandan genocide</a> &middot;
-    <a href="?e=eu-enlargement">EU eastern enlargement</a> &middot;
-    <a href="?e=syria">Syrian refugee crisis</a> &middot;
-    <a href="?e=venezuela">Venezuelan exodus</a> &middot;
-    <a href="?e=covid">COVID-19 freeze</a> &middot;
-    <a href="?e=hongkong">Hong Kong exodus</a> &middot;
-    <a href="?e=ukraine">Russian invasion of Ukraine</a>
+  <nav id="explore-menu">
+    <div class="col">
+      <div class="head">Migration events</div>
+      <a href="?e=gastarbeiter">Gastarbeiter era</a>
+      <a href="?e=bangladesh">Bangladesh Liberation War</a>
+      <a href="?e=indochina">Indochina refugee crisis</a>
+      <a href="?e=afghan-soviet">Soviet&ndash;Afghan War</a>
+      <a href="?e=mariel">Mariel boatlift</a>
+      <a href="?e=soviet-collapse">Fall of the Soviet Union</a>
+      <a href="?e=yugoslav">Yugoslav Wars</a>
+      <a href="?e=rwanda">Rwandan genocide</a>
+      <a href="?e=eu-enlargement">EU eastern enlargement</a>
+      <a href="?e=syria">Syrian refugee crisis</a>
+      <a href="?e=venezuela">Venezuelan exodus</a>
+      <a href="?e=covid">COVID-19 freeze</a>
+      <a href="?e=hongkong">Hong Kong exodus</a>
+      <a href="?e=ukraine">Russian invasion of Ukraine</a>
+    </div>
+    <div class="col">
+      <div class="head">Countries, year by year</div>
+      <div id="explore-countries"></div>
+    </div>
   </nav>
 
   <footer id="credits">

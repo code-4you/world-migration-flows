@@ -132,22 +132,40 @@ html, body {
   z-index: 10;
 }
 
-/* crawlable event links, tucked above the credits bar */
-#explore {
+/* Explore menu: crawlable event + country links behind a toolbar button */
+#explore-btn { margin-left: auto; }
+
+#explore-menu {
+  display: none;
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 22px;
-  padding: 3px 12px;
-  font-size: 10.5px;
-  color: #777;
-  background: rgba(10, 10, 12, 0.72);
-  z-index: 10;
-  white-space: nowrap;
-  overflow-x: auto;
+  top: 44px;
+  right: 8px;
+  z-index: 30;
+  background: rgba(14, 14, 17, 0.97);
+  border: 1px solid #33333c;
+  border-radius: 6px;
+  padding: 12px 16px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  gap: 26px;
 }
-#explore a { color: #999; text-decoration: none; }
-#explore a:hover { color: #ffce3a; }
+#explore-menu.open { display: flex; }
+#explore-menu .head {
+  font-weight: 600;
+  color: #ffce3a;
+  font-size: 12.5px;
+  margin-bottom: 6px;
+}
+#explore-menu a {
+  display: block;
+  color: #bbb;
+  text-decoration: none;
+  font-size: 12.5px;
+  line-height: 1.75;
+  white-space: nowrap;
+}
+#explore-menu a:hover { color: #fff; }
+#explore-countries { columns: 3; column-gap: 22px; }
 
 #credits a { color: #aaa; }
 
