@@ -49,6 +49,7 @@ const EVENTS = [
   { id: "syria", name: "Syrian refugee crisis", y0: 2011, y1: 2017, c: ["SY"] },
   { id: "venezuela", name: "Venezuelan exodus", y0: 2014, y1: 2022, c: ["VE"] },
   { id: "covid", name: "COVID-19 freeze", y0: 2019, y1: 2021, c: [] },
+  { id: "hongkong", name: "Hong Kong exodus", y0: 2019, y1: 2023, c: ["HK"] },
   { id: "ukraine", name: "Russian invasion of Ukraine", y0: 2021, y1: 2023, c: ["UA"] },
 ];
 const eventYearIds = (ev) => {
