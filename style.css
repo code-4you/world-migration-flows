@@ -198,8 +198,8 @@ html, body {
 #source-note {
   display: none;
   position: absolute;
-  right: 12px;
-  bottom: 48px;
+  left: 12px;
+  bottom: 86px; /* above the legend; keeps clear of the year/event overlay on the right */
   max-width: 300px;
   padding: 7px 10px;
   font-size: 11.5px;
