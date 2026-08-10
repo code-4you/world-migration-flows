@@ -76,7 +76,7 @@ html, body {
 
 /* keep the wide-content dropdowns compact when closed; the opened list
  * still expands to fit the full option text */
-#country-select { width: 132px; }
+#country-select { width: 238px; }
 #event-select { width: 104px; }
 
 #legend {
