@@ -22,6 +22,9 @@ html, body {
 #circles { z-index: 1; }
 #particles { z-index: 2; }
 
+/* zoom controls sit below the toolbar, not under it */
+.maplibregl-ctrl-top-right { top: 46px; }
+
 #topbar {
   position: absolute;
   top: 0;
