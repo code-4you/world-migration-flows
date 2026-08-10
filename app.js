@@ -473,12 +473,9 @@ function tooltipHtml(c) {
 async function setPeriod(id) {
   state.period = id;
   await loadPeriod(id);
-  document
-    .querySelectorAll("#period-buttons button")
-    .forEach((b) => b.classList.toggle("active", b.dataset.period === id));
-  const era = document.getElementById("era-select");
-  era.value = EARLY_PERIODS.some((p) => p.id === id) ? id : "";
-  era.classList.toggle("active", era.value !== "");
+  const ds = document.getElementById("decade-select");
+  ds.value = ALL_PERIODS().some((p) => p.id === id) ? id : "";
+  ds.classList.toggle("active", ds.value !== "");
   const ys = document.getElementById("year-select");
   ys.value = isYearId(id) ? id : "";
   ys.classList.toggle("active", ys.value !== "");
@@ -627,18 +624,19 @@ function startPlay(btnId, seq, stepMs) {
 async function init() {
   resizeCanvases();
 
-  const periodBar = document.getElementById("period-buttons");
-  for (const p of PERIODS) {
-    const b = document.createElement("button");
-    b.textContent = p.label;
-    b.dataset.period = p.id;
-    b.addEventListener("click", () => {
-      stopPlay();
-      clearEvent();
-      setPeriod(p.id);
-    });
-    periodBar.appendChild(b);
+  const decadeSelect = document.getElementById("decade-select");
+  for (const p of ALL_PERIODS()) {
+    const o = document.createElement("option");
+    o.value = p.id;
+    o.textContent = p.label;
+    decadeSelect.appendChild(o);
   }
+  decadeSelect.addEventListener("change", () => {
+    if (!decadeSelect.value) return;
+    stopPlay();
+    clearEvent();
+    setPeriod(decadeSelect.value);
+  });
 
   const eventSelect = document.getElementById("event-select");
   for (const ev of EVENTS) {
@@ -661,20 +659,6 @@ async function init() {
     if (state.playing === "play-events") stopPlay();
     else if (eventSelect.value) setEvent(eventSelect.value);
     else startEventsTour();
-  });
-
-  const eraSelect = document.getElementById("era-select");
-  for (const p of EARLY_PERIODS) {
-    const o = document.createElement("option");
-    o.value = p.id;
-    o.textContent = p.label;
-    eraSelect.appendChild(o);
-  }
-  eraSelect.addEventListener("change", () => {
-    if (!eraSelect.value) return;
-    stopPlay();
-    clearEvent();
-    setPeriod(eraSelect.value);
   });
 
   const yearSelect = document.getElementById("year-select");
