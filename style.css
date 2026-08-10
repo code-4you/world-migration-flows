@@ -71,7 +71,10 @@ html, body {
   font-weight: 600;
 }
 
-#play { min-width: 84px; }
+/* keep the wide-content dropdowns compact when closed; the opened list
+ * still expands to fit the full option text */
+#country-select { width: 132px; }
+#event-select { width: 104px; }
 
 #legend {
   position: absolute;
