@@ -61,7 +61,7 @@ const eventYearIds = (ev) => {
   return ids;
 };
 
-const DEFAULT_PERIOD = "2020_2024";
+const DEFAULT_PERIOD = TOTAL_PERIOD.id; // land on the full 1960-2024 view
 const PLAY_STEP_MS = 6000; // decades
 const YEAR_STEP_MS = 2000; // years
 const MAX_PARTICLES = 6800;

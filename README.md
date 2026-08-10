@@ -83,6 +83,35 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
       long census records
 - [ ] Per-country play mode narration / camera movement
 
+## Contributing
+
+Contributions are welcome — the easiest way to start is
+[opening an issue](https://github.com/code-4you/world-migration-flows/issues)
+for a bug, a data problem, or an idea.
+
+Some good first contributions:
+
+- **Add a migration event.** Events are one-line entries in the `EVENTS`
+  array at the top of [app.js](app.js) — an id, a display name, a year range
+  (start years, within 1960–2023), and the ISO2 codes of the countries to
+  focus. Please check the flows are actually visible in the data for those
+  years before submitting.
+- **Improve data.** If you know a better public bilateral migration source
+  (especially anything past 2023), open an issue with a link. Each source
+  has its own script under [scripts/](scripts/) that writes plain JSON into
+  `data/`, so new sources slot in without touching the app.
+- **Fix or polish the app.** It's dependency-free vanilla JS (MapLibre GL
+  from a CDN, two canvas overlays) — no build step.
+
+To run locally: clone, then serve the folder over HTTP (e.g.
+`python -m http.server 8000`) and open `http://localhost:8000/` — opening
+`index.html` directly won't work because the app fetches its JSON data.
+The `data/` files are committed, so you only need Python and the raw source
+downloads (see the docstrings in `scripts/`) if you want to regenerate data.
+
+Code is MIT; by contributing you agree your contributions are too. The
+underlying datasets keep their own licenses (see Credits).
+
 ## Credits
 
 - Concept and original visualization: [Max Galka (Metrocosm)](https://web.archive.org/web/2018/http://metrocosm.com/)
