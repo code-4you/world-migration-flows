@@ -19,6 +19,8 @@ const EARLY_PERIODS = [
   { id: "1980_1990", label: "1980–1990" },
 ];
 const ALL_PERIODS = () => [...EARLY_PERIODS, ...PERIODS];
+/* Whole-map aggregate view; in the Decade dropdown but not the play cycle */
+const TOTAL_PERIOD = { id: "1960_2024", label: "All decades (1960–2024)" };
 /* Single-year transitions: UNU-CRIS annual series 1960-1989, then the
  * Gaskin & Abel deep-learning estimates for 1990-2023 */
 const YEAR_MIN = 1960, YEAR_MAX = 2024;
@@ -31,6 +33,7 @@ function isYearId(id) {
   return !!m && +m[2] === +m[1] + 1;
 }
 function periodLabel(id) {
+  if (id === TOTAL_PERIOD.id) return "1960–2024";
   const p = ALL_PERIODS().find((x) => x.id === id) || YEAR_PERIODS.find((x) => x.id === id);
   return p ? p.label : id.replace("_", "–");
 }
@@ -474,7 +477,8 @@ async function setPeriod(id) {
   state.period = id;
   await loadPeriod(id);
   const ds = document.getElementById("decade-select");
-  ds.value = ALL_PERIODS().some((p) => p.id === id) ? id : "";
+  ds.value =
+    id === TOTAL_PERIOD.id || ALL_PERIODS().some((p) => p.id === id) ? id : "";
   ds.classList.toggle("active", ds.value !== "");
   const ys = document.getElementById("year-select");
   ys.value = isYearId(id) ? id : "";
@@ -625,7 +629,7 @@ async function init() {
   resizeCanvases();
 
   const decadeSelect = document.getElementById("decade-select");
-  for (const p of ALL_PERIODS()) {
+  for (const p of [...ALL_PERIODS(), TOTAL_PERIOD]) {
     const o = document.createElement("option");
     o.value = p.id;
     o.textContent = p.label;
@@ -747,7 +751,10 @@ async function init() {
   let p = params.get("p");
   if (/^\d{4}$/.test(p) && +p >= YEAR_MIN && +p < YEAR_MAX) p = `${p}_${+p + 1}`;
   const c = (params.get("c") || "").toUpperCase();
-  const valid = ALL_PERIODS().some((x) => x.id === p) || YEAR_PERIODS.some((x) => x.id === p);
+  const valid =
+    p === TOTAL_PERIOD.id ||
+    ALL_PERIODS().some((x) => x.id === p) ||
+    YEAR_PERIODS.some((x) => x.id === p);
   const startPeriod = valid ? p : DEFAULT_PERIOD;
   await loadPeriod(startPeriod);
   const evParam = params.get("e");
