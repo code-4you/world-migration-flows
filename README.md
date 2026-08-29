@@ -12,10 +12,10 @@ crisis, the Gastarbeiter era, the fall of the Soviet Union and more — each
 auto-playing its years with the affected countries highlighted, and each
 shareable via `?e=<event>` links (e.g. `?e=ukraine`). Its play button tours
 every event in sequence.
-Circles show each country's total net migration: **blue = net gain, red = net loss**.
-Hover a circle for numbers. Pick a country (USA / China / Germany / Australia, or any
-country from the dropdown) to isolate its flows, and press **Play** to step through
-every period from 1990 to 2024.
+Circles show each country's immigration (blue) and emigration (red) as
+nested discs — the larger flow outside, the smaller on top, half-and-half
+when balanced. Hover for numbers, click any country (or use the dropdown)
+to isolate its flows, and play through decades or single years, 1960–2024.
 
 ## Data
 
