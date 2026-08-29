@@ -88,23 +88,30 @@ const state = {
   hover: null,
 };
 
+/* Self-hosted basemap: Natural Earth 50m country polygons rendered as dark
+ * shapes — no tile provider, no API key, nothing external to break */
 const map = new maplibregl.Map({
   container: "map",
   style: {
     version: 8,
     sources: {
-      carto: {
-        type: "raster",
-        tiles: [
-          "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-        ],
-        tileSize: 256,
-        attribution: "© OpenStreetMap contributors © CARTO",
-      },
+      countries: { type: "geojson", data: "assets/countries.geojson" },
     },
-    layers: [{ id: "carto", type: "raster", source: "carto" }],
+    layers: [
+      { id: "bg", type: "background", paint: { "background-color": "#0a0a0c" } },
+      {
+        id: "land",
+        type: "fill",
+        source: "countries",
+        paint: { "fill-color": "#212126" },
+      },
+      {
+        id: "borders",
+        type: "line",
+        source: "countries",
+        paint: { "line-color": "#37373e", "line-width": 0.6 },
+      },
+    ],
   },
   center: [12, 24],
   zoom: BASE_ZOOM,
