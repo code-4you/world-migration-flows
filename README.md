@@ -81,6 +81,38 @@ python scripts/process_gaskin.py # single years 1990-2023 + 2020-2024 period (ru
 
 (after downloading the source files into `raw/` — see the script docstrings).
 
+## How migration is measured (and how much to trust it)
+
+Nobody keeps a worldwide ledger of moves. Migration numbers are built from
+imperfect ingredients, and knowing them explains everything odd about the map:
+
+- **Censuses are photos, not videos.** A census shows who lives where *on
+  one day* ("born in Nigeria, living in the UK"). Comparing two photos ten
+  years apart hints at migration — but two photos cannot tell "nothing
+  happened" apart from "one person arrived and one person died." Deaths of
+  emigrants abroad silently cancel real migration in the count.
+- **That's the pre-1990 weakness.** Our 1960–1990 numbers come from such
+  photo-comparisons: the direction and relative size of every flow is
+  right, but magnitudes run low (deaths eat part of them), and emigration
+  from countries with old diasporas is understated most.
+- **Post-1990 data corrects for deaths.** The modern estimates (Abel &
+  Cohen; Gaskin & Abel) first compute how many people *should have* died in
+  each migrant group using mortality tables, and only call the unexplained
+  remainder "migration". Same photos, right answer.
+- **Poor-quality censuses are patched by mirror data.** A Nigerian migrant
+  doesn't need Nigeria's census to be counted — the UK, US or South African
+  census records them as Nigerian-born. Every migrant only has to be
+  counted *somewhere*. Refugee flows are covered by UNHCR registration,
+  which works even in poor regions.
+- **The resulting quality gradient:** flows touching rich countries are the
+  most reliable (mirror-counted), refugee crises are well covered
+  (registered), and migration *between* two weak-data countries (e.g.
+  intra-African labor movement) leans most on modeling.
+- **Tooltips show flows, consistently.** "Net" always equals the displayed
+  In − Out. (Earlier versions showed a raw stock-based net in which deaths
+  abroad masqueraded as reverse migration — a bug caught by a Reddit
+  commenter and fixed.)
+
 ## Running locally
 
 Any static file server works:
