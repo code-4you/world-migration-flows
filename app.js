@@ -187,6 +187,7 @@ function unwrapLon(fromLon, toLon) {
  * flows[a][b] = gross migration b->a, so each direction is its own route. */
 function rebuildRoutes() {
   const flows = state.flows[state.period];
+  if (!flows) return;
   const C = state.countries;
   const sel = state.selected;
   const [py1, py2] = state.period.split("_").map(Number);
@@ -266,6 +267,7 @@ function projectRoutes() {
  * false for view changes (pan/zoom), which must track instantly */
 function rebuildCircles(animate) {
   const flows = state.flows[state.period];
+  if (!flows) return;
   const C = state.countries;
   const sel = state.selected;
   const circles = [];
@@ -537,8 +539,10 @@ function tooltipHtml(c) {
 }
 
 async function setPeriod(id) {
-  state.period = id;
+  // load BEFORE switching: map interactions fire rebuilds at any moment, and
+  // a period whose data hasn't arrived yet would make them throw
   await loadPeriod(id);
+  state.period = id;
   const ds = document.getElementById("decade-select");
   ds.value =
     id === TOTAL_PERIOD.id || ALL_PERIODS().some((p) => p.id === id) ? id : "";
@@ -839,8 +843,14 @@ async function init() {
   }
 
   map.on("move", () => {
-    projectRoutes();
-    rebuildCircles();
+    // an exception here would permanently break MapLibre's drag/zoom
+    // handlers (the map "freezes" while everything else keeps running)
+    try {
+      projectRoutes();
+      rebuildCircles();
+    } catch (err) {
+      console.error(err);
+    }
   });
   window.addEventListener("resize", () => {
     resizeCanvases();
