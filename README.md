@@ -39,8 +39,16 @@ every period from 1990 to 2024.
   (Chi et al., PNAS 2025). Unlike the raw Meta data, China and Iran are
   covered. The "Year…" dropdown and its play button (2s per year) step
   through every year from 1960→1961 to 2023→2024.
-- All numbers are model-based estimates, not counts; the three sources use
+- All numbers are model-based estimates, not counts; the sources use
   different pipelines, so expect methodological seams at 1990 and 2020.
+  The most visible one: **emigration from rich countries is under-counted
+  before 1990.** The pre-1990 stock-difference method only registers an
+  outflow when a country's expatriate stock grows, and deaths of older
+  emigrants usually cancel new departures — e.g. US emigration reads as
+  ~30k/year through the 1980s, then jumps to ~500k/year from 1990 when the
+  flow-based estimates take over. Emigration didn't start in 1990; it just
+  becomes visible then. (1990 itself, the first Gaskin & Abel year, runs
+  hot — treat that single year's magnitudes with extra caution.)
 
 Regenerate the data files with:
 
