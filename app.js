@@ -270,35 +270,62 @@ function rebuildCircles(animate) {
   const sel = state.selected;
   const circles = [];
 
-  let maxAbs = 1;
+  // entries: [iso2, grossIn, grossOut, net] — each circle shows BOTH volumes
   const entries = [];
   if (!sel) {
+    const gin = {}, gout = {};
+    for (const a in flows) {
+      for (const b in flows[a]) {
+        if (b === a) continue;
+        gin[a] = (gin[a] || 0) + flows[a][b];
+        gout[b] = (gout[b] || 0) + flows[a][b];
+      }
+    }
     for (const iso2 in flows) {
       if (!C[iso2]) continue;
-      entries.push([iso2, flows[iso2][iso2] || 0]);
+      entries.push([iso2, gin[iso2] || 0, gout[iso2] || 0, flows[iso2][iso2] || 0]);
     }
   } else {
-    // partners = anyone with a flow to or from the selected country
+    // partners = anyone with a flow to or from the selected country;
+    // their in/out are the two directions of the pair with the selection
     const partners = new Set(Object.keys(flows[sel] || {}));
     for (const c in flows) if (flows[c][sel]) partners.add(c);
     partners.delete(sel);
-    entries.push([sel, (flows[sel] || {})[sel] || 0]);
+    let inSel = 0, outSel = 0;
+    const pEntries = [];
     for (const p of partners) {
       if (!C[p]) continue;
-      // partner's net vs selected: >0 means the partner gains people
-      const net = ((flows[p] || {})[sel] || 0) - ((flows[sel] || {})[p] || 0);
-      entries.push([p, net]);
+      const ip = (flows[p] || {})[sel] || 0; // selected -> partner
+      const op = (flows[sel] || {})[p] || 0; // partner -> selected
+      inSel += op;
+      outSel += ip;
+      pEntries.push([p, ip, op, ip - op]);
     }
+    entries.push([sel, inSel, outSel, (flows[sel] || {})[sel] || 0], ...pEntries);
   }
-  for (const [, net] of entries) maxAbs = Math.max(maxAbs, Math.abs(net));
+  let maxVol = 1;
+  for (const [, gin, gout] of entries) maxVol = Math.max(maxVol, gin, gout);
 
   state.worldW = worldWidth();
   const zoomScale = Math.pow(2, (map.getZoom() - BASE_ZOOM) * 0.6);
-  for (const [iso2, net] of entries) {
+  for (const [iso2, gin, gout, net] of entries) {
     const c = C[iso2];
+    const big = Math.max(gin, gout), small = Math.min(gin, gout);
+    if (!big) continue;
     const pt = map.project([c.lon, c.lat]);
-    const r = (3 + 34 * Math.sqrt(Math.abs(net) / maxAbs)) * zoomScale;
-    circles.push({ iso2, x: pt.x, y: pt.y, r, net, gain: net >= 0 });
+    const r = (3 + 34 * Math.sqrt(big / maxVol)) * zoomScale;
+    circles.push({
+      iso2,
+      x: pt.x,
+      y: pt.y,
+      r,
+      net,
+      gin,
+      gout,
+      bigIn: gin >= gout, // outer circle color: blue if inflow dominates
+      innerRatio: Math.sqrt(small / big), // nested circle, area-true
+      balanced: small / big >= 0.95, // near-equal -> half blue / half red
+    });
   }
   circles.sort((a, b) => b.r - a.r); // big first so small stay hoverable
   state.circles = circles;
@@ -348,19 +375,46 @@ function drawCircles() {
   for (const c of state.circles) {
     const selectedOne = c.iso2 === state.selected || state.eventFocus.includes(c.iso2);
     const r = Math.max(0, c.r); // a negative radius would throw and kill drawing
+    const bigFill = c.bigIn ? COLOR_IN : COLOR_OUT;
+    const bigStroke = c.bigIn ? COLOR_IN_STROKE : COLOR_OUT_STROKE;
+    const smallFill = c.bigIn ? COLOR_OUT : COLOR_IN;
     for (const k of KS) {
       const x = c.x + k * W;
       if (x + r < 0 || x - r > innerWidth) continue;
+      if (c.balanced) {
+        // near-equal in/out: half blue (left) / half red (right)
+        cCtx.beginPath();
+        cCtx.arc(x, c.y, r, Math.PI / 2, (3 * Math.PI) / 2);
+        cCtx.closePath();
+        cCtx.fillStyle = COLOR_IN;
+        cCtx.fill();
+        cCtx.beginPath();
+        cCtx.arc(x, c.y, r, -Math.PI / 2, Math.PI / 2);
+        cCtx.closePath();
+        cCtx.fillStyle = COLOR_OUT;
+        cCtx.fill();
+      } else {
+        cCtx.beginPath();
+        cCtx.arc(x, c.y, r, 0, Math.PI * 2);
+        cCtx.fillStyle = bigFill;
+        cCtx.fill();
+        // the smaller flow nested on top, area-proportional
+        const ri = r * c.innerRatio;
+        if (ri > 1) {
+          cCtx.beginPath();
+          cCtx.arc(x, c.y, ri, 0, Math.PI * 2);
+          cCtx.fillStyle = smallFill;
+          cCtx.fill();
+        }
+      }
       cCtx.beginPath();
       cCtx.arc(x, c.y, r, 0, Math.PI * 2);
-      cCtx.fillStyle = c.gain ? COLOR_IN : COLOR_OUT;
-      cCtx.fill();
       cCtx.lineWidth = selectedOne ? 2.5 : 1;
       cCtx.strokeStyle = selectedOne
         ? COLOR_SELECTED
-        : c.gain
-          ? COLOR_IN_STROKE
-          : COLOR_OUT_STROKE;
+        : c.balanced
+          ? "rgba(200, 200, 210, 0.7)"
+          : bigStroke;
       cCtx.stroke();
     }
   }
@@ -475,6 +529,8 @@ function tooltipHtml(c) {
   return (
     `<div class="name">${name}</div>` +
     `<div>Net migration ${label}: <span class="${cls}">${fmt(c.net)}</span></div>` +
+    `<div><span class="gain">In: ${(c.gin || 0).toLocaleString("en-US")}</span> &middot; ` +
+    `<span class="loss">Out: ${(c.gout || 0).toLocaleString("en-US")}</span></div>` +
     `<div class="sub">Top origins</div>` + (origins.length ? list(origins, "&larr;") : none) +
     `<div class="sub">Top destinations</div>` + (dests.length ? list(dests.slice(0, 5), "&rarr;") : none)
   );
