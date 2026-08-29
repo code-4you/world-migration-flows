@@ -36,8 +36,10 @@ def load_stocks():
             cache[name] = resolve(name, by_name, misses)
         return cache[name]
 
-    # stocks[(dest, orig)] = [stock per year, index year-Y0]
-    stocks = defaultdict(lambda: [0] * NYEARS)
+    # stocks[(dest, orig)] = [stock per year or None, index year-Y0].
+    # Values are ADDED so entities that map to one ISO code merge (e.g.
+    # "Vietnam; Dem. Rep." pre-1970 + unified "Vietnam" from 1980).
+    stocks = defaultdict(lambda: [None] * NYEARS)
     path = os.path.join(RAW, "unu", "migration_imputed_RIKS_dec2021.csv")
     with open(path, newline="", encoding="utf8", errors="replace") as f:
         for row in csv.DictReader(f):
@@ -51,9 +53,31 @@ def load_stocks():
             dest = r(row["destination"])
             if orig is None or dest is None or orig == dest:
                 continue
-            stocks[(dest, orig)][y - Y0] = int(float(s))
+            i = y - Y0
+            vals = stocks[(dest, orig)]
+            vals[i] = (vals[i] or 0) + int(float(s))
     if misses:
         print("unmatched names (skipped):", sorted(misses))
+
+    # Interior gaps (e.g. Vietnam 1971-1979, absent between its two entities)
+    # are linearly interpolated so a decade of migration isn't dumped into the
+    # single year where data resumes; leading/trailing gaps are held flat so
+    # no flows are invented outside the observed range.
+    for vals in stocks.values():
+        known = [i for i, v in enumerate(vals) if v is not None]
+        if not known:
+            continue
+        first, last = known[0], known[-1]
+        for i in range(first):
+            vals[i] = vals[first]
+        for i in range(last + 1, NYEARS):
+            vals[i] = vals[last]
+        for a, b in zip(known, known[1:]):
+            if b - a > 1:
+                for i in range(a + 1, b):
+                    vals[i] = vals[a] + (vals[b] - vals[a]) * (i - a) / (b - a)
+        for i, v in enumerate(vals):
+            vals[i] = int(v)
     return stocks
 
 

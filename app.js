@@ -40,20 +40,20 @@ function periodLabel(id) {
 /* Named migration events for the Events dropdown: year range (start years of
  * yearly transitions) and the countries the view focuses on */
 const EVENTS = [
-  { id: "gastarbeiter", name: "Gastarbeiter era", y0: 1960, y1: 1973, c: ["DE"] },
-  { id: "bangladesh", name: "Bangladesh Liberation War", y0: 1970, y1: 1972, c: ["BD"] },
-  { id: "indochina", name: "Indochina refugee crisis", y0: 1975, y1: 1985, c: ["VN", "KH", "LA"] },
-  { id: "afghan-soviet", name: "Soviet–Afghan War", y0: 1979, y1: 1989, c: ["AF"] },
-  { id: "mariel", name: "Mariel boatlift", y0: 1979, y1: 1981, c: ["CU"] },
-  { id: "soviet-collapse", name: "Fall of the Soviet Union", y0: 1990, y1: 1996, c: ["RU", "UA", "KZ"] },
-  { id: "yugoslav", name: "Yugoslav Wars", y0: 1991, y1: 1996, c: ["BA", "HR", "RS"] },
-  { id: "rwanda", name: "Rwandan genocide", y0: 1993, y1: 1997, c: ["RW"] },
-  { id: "eu-enlargement", name: "EU eastern enlargement", y0: 2004, y1: 2012, c: ["PL", "RO"] },
+  { id: "gastarbeiter", name: "Gastarbeiter era", y0: 1960, y1: 1973, c: ["DE"] }, // recruitment stop Nov 1973
+  { id: "bangladesh", name: "Bangladesh Liberation War", y0: 1971, y1: 1972, c: ["BD"] }, // war 1971, returns 1972
+  { id: "indochina", name: "Indochina refugee crisis", y0: 1975, y1: 1985, c: ["VN", "KH", "LA"] }, // fall of Saigon -> boat people
+  { id: "afghan-soviet", name: "Soviet–Afghan War", y0: 1979, y1: 1989, c: ["AF"] }, // invasion Dec 1979 - withdrawal Feb 1989
+  { id: "mariel", name: "Mariel boatlift", y0: 1980, y1: 1980, c: ["CU"] }, // April-October 1980
+  { id: "soviet-collapse", name: "Fall of the Soviet Union", y0: 1991, y1: 1996, c: ["RU", "UA", "KZ"] }, // dissolution Dec 1991 + aftermath wave
+  { id: "yugoslav", name: "Yugoslav Wars", y0: 1991, y1: 1995, c: ["BA", "HR", "RS"] }, // 1991 - Dayton Nov 1995
+  { id: "rwanda", name: "Rwandan genocide", y0: 1994, y1: 1996, c: ["RW"] }, // genocide 1994, mass returns 1996
+  { id: "eu-enlargement", name: "EU eastern enlargement", y0: 2004, y1: 2012, c: ["PL", "RO"] }, // 2004 + 2007 accessions
   { id: "syria", name: "Syrian refugee crisis", y0: 2011, y1: 2017, c: ["SY"] },
-  { id: "venezuela", name: "Venezuelan exodus", y0: 2014, y1: 2022, c: ["VE"] },
-  { id: "covid", name: "COVID-19 freeze", y0: 2019, y1: 2021, c: [] },
-  { id: "hongkong", name: "Hong Kong exodus", y0: 2019, y1: 2023, c: ["HK"] },
-  { id: "ukraine", name: "Russian invasion of Ukraine", y0: 2021, y1: 2023, c: ["UA"] },
+  { id: "venezuela", name: "Venezuelan exodus", y0: 2014, y1: 2023, c: ["VE"] }, // ongoing through data end
+  { id: "covid", name: "COVID-19 freeze", y0: 2020, y1: 2021, c: [] }, // border closures began March 2020
+  { id: "hongkong", name: "Hong Kong exodus", y0: 2019, y1: 2023, c: ["HK"] }, // protests June 2019 -> BN(O) wave
+  { id: "ukraine", name: "Russian invasion of Ukraine", y0: 2022, y1: 2023, c: ["UA"] }, // invasion Feb 2022
 ];
 const eventYearIds = (ev) => {
   const ids = [];
