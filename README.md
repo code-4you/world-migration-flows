@@ -108,6 +108,15 @@ imperfect ingredients, and knowing them explains everything odd about the map:
   most reliable (mirror-counted), refugee crises are well covered
   (registered), and migration *between* two weak-data countries (e.g.
   intra-African labor movement) leans most on modeling.
+- **The counting is asymmetric, and it skews the picture.** Rich countries
+  count arrivals well, so Africa→Europe is among the best-measured data on
+  Earth — while flows *into* Africa and *between* African countries depend
+  on weak local statistics and run understated. In reality, most African
+  migrants move to other African countries; the popular image of African
+  migration as "everyone heading to Europe" is partly a measurement
+  artifact — the well-lit corridor looks like the whole story. When a
+  corridor connects two weak-statistics countries, treat its number as a
+  sketch, not a figure.
 - **Tooltips show flows, consistently.** "Net" always equals the displayed
   In − Out. (Earlier versions showed a raw stock-based net in which deaths
   abroad masqueraded as reverse migration — a bug caught by a Reddit
