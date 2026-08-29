@@ -62,6 +62,17 @@ const eventYearIds = (ev) => {
 };
 
 const DEFAULT_PERIOD = TOTAL_PERIOD.id; // land on the full 1960-2024 view
+const FALLBACK_YEAR = "2023_2024"; // newest globally complete year
+
+/* data-source notices, switched per view */
+const NOTE_MODELED =
+  "This view uses deep-learning estimates (Gaskin & Abel 2025) that " +
+  "integrate UN census stocks, national statistics and Meta/Facebook " +
+  "device-signal data — modeled values, not direct counts.";
+const NOTE_REPORTED =
+  "2024 uses officially reported statistics (Eurostat; Australian Bureau of " +
+  "Statistics, FY 2024–25) — actual counts, but available only for countries " +
+  "that publish both immigration and emigration by partner country.";
 const PLAY_STEP_MS = 6000; // decades
 const YEAR_STEP_MS = 2000; // years
 const MAX_PARTICLES = 6800;
@@ -78,6 +89,7 @@ const state = {
   selected: "", // ISO2 or "" for all
   event: null, // active EVENTS entry, or null
   eventFocus: [], // ISO2 list the active event highlights
+  extYears: {}, // reported-data years: {periodId: [covered ISO2s]}
   playing: false,
   playTimer: null,
   flows: {}, // periodId -> flows json
@@ -554,9 +566,13 @@ async function setPeriod(id) {
   // never touch the URL mid-playback: rapid replaceState calls can interrupt
   // map dragging; the URL is synced once when playback stops instead
   if (!state.event && !state.playing) syncUrl();
-  // deep-learning-sourced views carry a small data-source notice on the map
-  const gaskinView = (isYearId(id) && +id.slice(0, 4) >= 1990) || id === "2020_2024";
-  document.getElementById("source-note").classList.toggle("show", gaskinView);
+  // data-source notice: reported statistics (2024+) or model-based estimates
+  const note = document.getElementById("source-note");
+  const reported = !!state.extYears[id];
+  const gaskinView =
+    !reported && ((isYearId(id) && +id.slice(0, 4) >= 1990) || id === "2020_2024");
+  note.textContent = reported ? NOTE_REPORTED : NOTE_MODELED;
+  note.classList.toggle("show", gaskinView || reported);
   // big year watermark for single-year views only (not decades)
   const lbl = document.getElementById("period-label");
   lbl.classList.toggle("show", isYearId(id));
@@ -565,11 +581,36 @@ async function setPeriod(id) {
   rebuildCircles(true);
 }
 
+/* Reported-data years available for a given selection */
+function extYearIdsFor(iso2) {
+  if (!iso2) return [];
+  return Object.keys(state.extYears)
+    .filter((id) => state.extYears[id].includes(iso2))
+    .sort();
+}
+
 async function setCountry(iso2) {
   clearEvent();
+  // reported years exist only for covered countries: leaving one (or
+  // deselecting) while such a year is shown falls back to the newest
+  // globally complete year
+  if (state.extYears[state.period] && (!iso2 || !state.extYears[state.period].includes(iso2))) {
+    await setPeriod(FALLBACK_YEAR);
+  }
   if (iso2 && !(state.flows[state.period] || {})[iso2]) iso2 = "";
   state.selected = iso2;
   document.getElementById("country-select").value = iso2;
+  // offer this country's reported years in the Year dropdown
+  const ys = document.getElementById("year-select");
+  ys.querySelectorAll("option.ext").forEach((o) => o.remove());
+  for (const id of extYearIdsFor(iso2)) {
+    const o = document.createElement("option");
+    o.value = id;
+    o.textContent = id.slice(0, 4);
+    o.className = "ext";
+    ys.appendChild(o);
+  }
+  if (ys.querySelector(`option[value="${state.period}"]`)) ys.value = state.period;
   updateLegend();
   rebuildRoutes();
   rebuildCircles(true);
@@ -761,7 +802,9 @@ async function init() {
     if (state.playing === "play-years") stopPlay();
     else {
       clearEvent();
-      startPlay("play-years", YEAR_PERIODS, YEAR_STEP_MS);
+      // include this country's reported years (e.g. 2024) at the end
+      const seq = [...YEAR_PERIODS, ...extYearIdsFor(state.selected).map((id) => ({ id }))];
+      startPlay("play-years", seq, YEAR_STEP_MS);
     }
   });
 
@@ -779,6 +822,11 @@ async function init() {
   });
 
   state.countries = await (await fetch("data/countries.json")).json();
+  try {
+    state.extYears = await (await fetch("data/extended_years.json")).json();
+  } catch {
+    state.extYears = {};
+  }
 
   const select = document.getElementById("country-select");
   Object.entries(state.countries)
@@ -821,7 +869,9 @@ async function init() {
   const valid =
     p === TOTAL_PERIOD.id ||
     ALL_PERIODS().some((x) => x.id === p) ||
-    YEAR_PERIODS.some((x) => x.id === p);
+    YEAR_PERIODS.some((x) => x.id === p) ||
+    // reported years are valid only together with a covered country
+    (state.extYears[p] && c && state.extYears[p].includes(c));
   const startPeriod = valid ? p : DEFAULT_PERIOD;
   await loadPeriod(startPeriod);
   const evParam = params.get("e");

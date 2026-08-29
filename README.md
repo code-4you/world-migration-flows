@@ -39,7 +39,16 @@ every period from 1990 to 2024.
   (Chi et al., PNAS 2025). Unlike the raw Meta data, China and Iran are
   covered. The "Year…" dropdown and its play button (2s per year) step
   through every year from 1960→1961 to 2023→2024.
-- All numbers are model-based estimates, not counts; the sources use
+- **2024 (selected countries only):** officially *reported* statistics —
+  [Eurostat](https://ec.europa.eu/eurostat/databrowser/view/migr_imm5prv/default/table)
+  immigration/emigration by partner country (calendar 2024, ~19 reporting
+  European countries) and [ABS Overseas Migration 2024–25](https://www.abs.gov.au/statistics/people/population/overseas-migration/2024-25)
+  arrivals/departures by country of birth (Australia). Because coverage is
+  partial, 2024 appears in the Year dropdown **only while a covered country
+  is selected**; global views stay capped at the newest complete year.
+  Only both-direction sources are used (inflow-only sources like green-card
+  counts are excluded). Regenerate with `scripts/process_reported.py`.
+- All other numbers are model-based estimates, not counts; the sources use
   different pipelines, so expect methodological seams at 1990 and 2020.
   The most visible one: **emigration from rich countries is under-counted
   before 1990.** The pre-1990 stock-difference method only registers an
