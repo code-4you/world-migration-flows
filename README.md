@@ -59,6 +59,16 @@ every period from 1990 to 2024.
   becomes visible then. (1990 itself, the first Gaskin & Abel year, runs
   hot — treat that single year's magnitudes with extra caution.)
 
+  The seam is also a **definition change**: before 1990 migrants are tracked
+  by *country of birth*; from 1990 by *country of previous residence*. An
+  Egyptian guest worker leaving Saudi Arabia is "an Egyptian" to the old
+  method — his departure never counts as Saudi emigration — but counts as
+  Saudi Arabia→Egypt under the new one. That's why guest-worker states
+  (Saudi Arabia, the Gulf) show almost no emigration before 1990 and large
+  outflows to Egypt, India and Indonesia from 1990: the same worker
+  rotations existed all along, only the newer method can see them. It's
+  also what makes return migration (e.g. US→Mexico) visible from 1990 on.
+
 Regenerate the data files with:
 
 ```bash
