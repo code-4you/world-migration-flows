@@ -375,25 +375,23 @@ function drawCircles() {
   for (const c of state.circles) {
     const selectedOne = c.iso2 === state.selected || state.eventFocus.includes(c.iso2);
     const r = Math.max(0, c.r); // a negative radius would throw and kill drawing
-    // circles use the reversed palette (red = immigration, blue = emigration);
-    // the flow dots keep blue = arriving / red = leaving
-    const bigFill = c.bigIn ? COLOR_OUT : COLOR_IN;
-    const bigStroke = c.bigIn ? COLOR_OUT_STROKE : COLOR_IN_STROKE;
-    const smallFill = c.bigIn ? COLOR_IN : COLOR_OUT;
+    const bigFill = c.bigIn ? COLOR_IN : COLOR_OUT;
+    const bigStroke = c.bigIn ? COLOR_IN_STROKE : COLOR_OUT_STROKE;
+    const smallFill = c.bigIn ? COLOR_OUT : COLOR_IN;
     for (const k of KS) {
       const x = c.x + k * W;
       if (x + r < 0 || x - r > innerWidth) continue;
       if (c.balanced) {
-        // near-equal in/out: half red (left) / half blue (right)
+        // near-equal in/out: half blue (left) / half red (right)
         cCtx.beginPath();
         cCtx.arc(x, c.y, r, Math.PI / 2, (3 * Math.PI) / 2);
         cCtx.closePath();
-        cCtx.fillStyle = COLOR_OUT;
+        cCtx.fillStyle = COLOR_IN;
         cCtx.fill();
         cCtx.beginPath();
         cCtx.arc(x, c.y, r, -Math.PI / 2, Math.PI / 2);
         cCtx.closePath();
-        cCtx.fillStyle = COLOR_IN;
+        cCtx.fillStyle = COLOR_OUT;
         cCtx.fill();
       } else {
         cCtx.beginPath();
