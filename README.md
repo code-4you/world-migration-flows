@@ -96,7 +96,13 @@ pre-COVID, from the datasets behind this map family):
   **20–50 million** are abroad on a temporary trip at any instant
   (back-of-envelope: 3.5B visits × an assumed 2–5 day average stay ÷ 365;
   stay length isn't recorded in any global dataset, so treat this as an
-  order of magnitude). Migrants are ~90% of everyone who is "somewhere
+  order of magnitude). Measured stays vary hugely and support that range:
+  same-day border trips are a large share of crossings (0 nights), rich
+  short-haul tourism runs ~3–8 nights (Italy 3.7, Indonesia 7.6), and
+  long-haul visiting-family travel runs far longer — Indian visitors to
+  Australia average ~58 nights. The farther the trip and the poorer the
+  origin country, the longer the stay: fewer trips per lifetime, each one
+  made to count. Migrants are ~90% of everyone who is "somewhere
   else" right now.
 - Put together: at any moment roughly **330–350 million people — about 4%
   of humanity — are outside their home country**, most of them long-term.
