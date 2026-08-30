@@ -81,38 +81,6 @@ python scripts/process_gaskin.py # single years 1990-2023 + 2020-2024 period (ru
 
 (after downloading the source files into `raw/` — see the script docstrings).
 
-## People outside their country: it isn't just migration
-
-Migration is only one way people end up in another country — and by *count
-of border crossings*, it's the small one. Rough worldwide numbers (2019,
-pre-COVID, from the datasets behind this map family):
-
-- **Crossings per year:** ~3.5 **billion** visits under 12 months (tourism,
-  business, family, short-term work) versus ~28 **million** migrations —
-  about **125 visits for every migration**. Almost all international
-  movement is temporary.
-- **People abroad at any given moment:** the balance flips. ~**304 million**
-  people *live* outside their birth country (UN, 2024) — while roughly
-  **35–70 million** are abroad on a temporary trip at any instant
-  (back-of-envelope: 3.5B visits × a ~4–7 day weighted average stay ÷ 365;
-  stay length isn't recorded in any global dataset, so treat this as an
-  order of magnitude). Measured stays vary hugely and support that range:
-  same-day border trips are a large share of crossings (0 nights), rich
-  short-haul tourism runs ~3–8 nights (Italy 3.7, Indonesia 7.6), and
-  long-haul visiting-family travel runs far longer — Indian visitors to
-  Australia average ~58 nights. The farther the trip and the poorer the
-  origin country, the longer the stay: fewer trips per lifetime, each one
-  made to count. Migrants are roughly **85%** (80–90%) of everyone
-  who is "somewhere else" right now.
-- Put together: at any moment roughly **340–375 million people — about
-  4–4.5% of humanity — are outside their home country**, most long-term.
-
-The temporary side of the story has its own maps:
-[World Travel Flows](https://code-4you.github.io/world-travel-flows/)
-(every visit, 1995–2022, including the 2020 collapse) and
-[Visits vs Migration](https://code-4you.github.io/visits-vs-migration/)
-(every corridor colored by how often visits become migration).
-
 ## How migration is measured (and how much to trust it)
 
 Nobody keeps a worldwide ledger of moves. Migration numbers are built from
@@ -185,6 +153,42 @@ apps like this one — it only hosts workbooks built in Tableau's own tools.
       1920 — extending further would be limited to a handful of countries with
       long census records
 - [ ] Per-country play mode narration / camera movement
+
+## Who is abroad right now?
+
+Worldwide, **migrants are roughly 90% of everyone who is "somewhere else"
+right now** — about 304 million people live outside their birth country
+(UN, 2024), versus a few tens of millions abroad on a temporary trip at any
+instant. (Visits outnumber migrations ~125:1 per year, but a trip lasts
+days while a migration lasts years, so the migrants accumulate.)
+
+But not everywhere. In these places the foreigners actually present are
+mostly **tourists**, so migration isn't the full picture there (2019
+snapshot; tourists-present estimated as inbound visits × ~5-day stay):
+
+| Country | Tourist share of foreigners present |
+|---|---|
+| Cuba | ~95% |
+| Andorra | ~85% |
+| Czechia | ~84% |
+| Tunisia | ~82% |
+| Slovakia | ~82% |
+| Montenegro | ~79% |
+| Vietnam | ~77% |
+| Austria | ~75% |
+| Jamaica | ~72% |
+| China | ~62% |
+
+The pattern: states closed to immigration but open to tourism (Cuba,
+Vietnam, China), post-communist Central Europe, and tourism microstates.
+
+The temporary side of the story has its own maps:
+
+- [World Travel Flows](https://code-4you.github.io/world-travel-flows/) —
+  every visit on Earth, 1995–2022, including the 2020 collapse
+- [Visits vs Migration](https://code-4you.github.io/visits-vs-migration/) —
+  every corridor colored by how often visits become migration
+
 
 ## Contributing
 
