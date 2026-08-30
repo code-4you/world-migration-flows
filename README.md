@@ -81,6 +81,32 @@ python scripts/process_gaskin.py # single years 1990-2023 + 2020-2024 period (ru
 
 (after downloading the source files into `raw/` — see the script docstrings).
 
+## People outside their country: it isn't just migration
+
+Migration is only one way people end up in another country — and by *count
+of border crossings*, it's the small one. Rough worldwide numbers (2019,
+pre-COVID, from the datasets behind this map family):
+
+- **Crossings per year:** ~3.5 **billion** visits under 12 months (tourism,
+  business, family, short-term work) versus ~28 **million** migrations —
+  about **125 visits for every migration**. Almost all international
+  movement is temporary.
+- **People abroad at any given moment:** the balance flips. ~**304 million**
+  people *live* outside their birth country (UN, 2024) — while only roughly
+  **20–50 million** are abroad on a temporary trip at any instant
+  (back-of-envelope: 3.5B visits × an assumed 2–5 day average stay ÷ 365;
+  stay length isn't recorded in any global dataset, so treat this as an
+  order of magnitude). Migrants are ~90% of everyone who is "somewhere
+  else" right now.
+- Put together: at any moment roughly **330–350 million people — about 4%
+  of humanity — are outside their home country**, most of them long-term.
+
+The temporary side of the story has its own maps:
+[World Travel Flows](https://code-4you.github.io/world-travel-flows/)
+(every visit, 1995–2022, including the 2020 collapse) and
+[Visits vs Migration](https://code-4you.github.io/visits-vs-migration/)
+(every corridor colored by how often visits become migration).
+
 ## How migration is measured (and how much to trust it)
 
 Nobody keeps a worldwide ledger of moves. Migration numbers are built from
