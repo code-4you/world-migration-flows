@@ -92,9 +92,9 @@ pre-COVID, from the datasets behind this map family):
   about **125 visits for every migration**. Almost all international
   movement is temporary.
 - **People abroad at any given moment:** the balance flips. ~**304 million**
-  people *live* outside their birth country (UN, 2024) — while only roughly
-  **20–50 million** are abroad on a temporary trip at any instant
-  (back-of-envelope: 3.5B visits × an assumed 2–5 day average stay ÷ 365;
+  people *live* outside their birth country (UN, 2024) — while roughly
+  **35–70 million** are abroad on a temporary trip at any instant
+  (back-of-envelope: 3.5B visits × a ~4–7 day weighted average stay ÷ 365;
   stay length isn't recorded in any global dataset, so treat this as an
   order of magnitude). Measured stays vary hugely and support that range:
   same-day border trips are a large share of crossings (0 nights), rich
@@ -102,10 +102,10 @@ pre-COVID, from the datasets behind this map family):
   long-haul visiting-family travel runs far longer — Indian visitors to
   Australia average ~58 nights. The farther the trip and the poorer the
   origin country, the longer the stay: fewer trips per lifetime, each one
-  made to count. Migrants are ~90% of everyone who is "somewhere
-  else" right now.
-- Put together: at any moment roughly **330–350 million people — about 4%
-  of humanity — are outside their home country**, most of them long-term.
+  made to count. Migrants are roughly **85%** (80–90%) of everyone
+  who is "somewhere else" right now.
+- Put together: at any moment roughly **340–375 million people — about
+  4–4.5% of humanity — are outside their home country**, most long-term.
 
 The temporary side of the story has its own maps:
 [World Travel Flows](https://code-4you.github.io/world-travel-flows/)
