@@ -34,6 +34,13 @@ PAIR_THRESHOLD = 100  # drop pair entries smaller than this to keep files lean
 
 # Kosovo appears in UN data but not in ISO 3166 lists
 EXTRA_M49 = {412: ("XK", "Kosovo")}
+# override points for countries whose geometric centroid falls OUTSIDE
+# their own territory (bent/crescent shapes) - reported by a map user
+CENTROID_OVERRIDES = {
+    "NO": (8.8, 61.2),
+    "HR": (15.9, 45.5),
+    "VN": (105.85, 21.0),
+}
 EXTRA_CENTROIDS = {
     "XK": (20.9, 42.6),
     "HK": (114.17, 22.32),
@@ -64,6 +71,7 @@ def load_centroids():
             iso2 = row["ISO"]
             if iso2 and iso2 not in cents:
                 cents[iso2] = (float(row["longitude"]), float(row["latitude"]))
+    cents.update(CENTROID_OVERRIDES)
     return cents
 
 
