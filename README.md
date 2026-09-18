@@ -23,10 +23,11 @@ to isolate its flows, and play through decades or single years, 1960–2024.
   (`da_pb_closed` method) — true gross flow estimates from demographic
   accounting, so both directions of every corridor are visible (e.g. Mexico→US
   *and* US→Mexico return migration).
-- **2020–2024 (fallback):** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock)
-  is used for `countries.json` and can regenerate a stock-difference version
-  of the 2020–2024 period, but the shipped file comes from the Gaskin & Abel
-  yearly estimates (2020–2023 summed).
+- **Country names and positions:** [UN DESA, International Migrant Stock 2024](https://www.un.org/development/desa/pd/content/international-migrant-stock)
+  defines the country set for `countries.json`; centroids from
+  [world-countries-centroids](https://github.com/gavinr/world-countries-centroids)
+  with manual fixes for bent shapes (Norway, Croatia, Vietnam). The 2020–2024
+  period file comes from the Gaskin & Abel yearly estimates (2020–2023 summed).
 - **1960–1990 decades and single years 1960–1989:** [UNU-CRIS imputed
   bilateral migration dataset](https://riks.cris.unu.edu/annual-bilateral-migration-data)
   (Standaert & Rayp 2022), stock differences over the decade or year.
@@ -50,6 +51,9 @@ to isolate its flows, and play through decades or single years, 1960–2024.
   counts are excluded). Regenerate with `scripts/process_reported.py`.
 - All other numbers are model-based estimates, not counts; the sources use
   different pipelines, so expect methodological seams at 1990 and 2020.
+  For the same reason the decade files (Abel & Cohen) and the single-year
+  files (Gaskin & Abel) are independent series: a decade's total won't
+  exactly match the sum of its ten years.
   The most visible one: **emigration from rich countries is under-counted
   before 1990.** The pre-1990 stock-difference method only registers an
   outflow when a country's expatriate stock grows, and deaths of older
@@ -72,14 +76,18 @@ to isolate its flows, and play through decades or single years, 1960–2024.
 Regenerate the data files with:
 
 ```bash
-python scripts/process.py        # countries.json + UN stock fallback (run first)
-python scripts/process_abel.py   # 1990-2020 decades (Abel & Cohen flows)
-python scripts/process_early.py  # 1960-1990 decades (UNU-CRIS stocks)
-python scripts/process_yearly.py # single years 1960-1989 (UNU-CRIS stocks)
-python scripts/process_gaskin.py # single years 1990-2023 + 2020-2024 period (run last)
+python scripts/process.py          # countries.json only (names + centroids)
+python scripts/process_abel.py     # 1990-2020 decades (Abel & Cohen flows)
+python scripts/process_early.py    # 1960-1990 decades (UNU-CRIS stocks)
+python scripts/process_yearly.py   # single years 1960-1989 (UNU-CRIS stocks)
+python scripts/process_gaskin.py   # single years 1990-2023 + 2020-2024 period
+python scripts/process_reported.py # reported 2024 (Eurostat + ABS live APIs)
+python scripts/process_total.py    # 1960-2024 all-decades view (run last)
 ```
 
 (after downloading the source files into `raw/` — see the script docstrings).
+Every `flows_*.json` has exactly one owning script, so rerunning any single
+script can't overwrite another source's files.
 
 ## How migration is measured (and how much to trust it)
 

@@ -1,4 +1,4 @@
-"""Build per-period net migration flow JSONs from the UN International
+"""Build data/countries.json (names + centroids) from the UN International
 Migrant Stock 2024 destination-origin matrix.
 
 Inputs (in raw/):
@@ -6,16 +6,13 @@ Inputs (in raw/):
   iso3166.json         M49 numeric -> ISO alpha-2 mapping (lukes/ISO-3166)
   centroids.csv        country centroids (gavinr/world-countries-centroids)
 
-Outputs (in data/):
-  flows_<t1>_<t2>.json  {ISO2: {ISO2: totalNet | pairNet, ...}} where
-                        flows[A][B] = net migration into A from B over the
-                        period (stock-difference estimate) and
-                        flows[A][A] = A's total net over all partners.
+Output (in data/):
   countries.json        {ISO2: {"name": ..., "lon": ..., "lat": ...}}
 
-Method: same approximation as Max Galka's original Metrocosm map — the net
-flow between two countries over a period is estimated as the change in
-migrant stocks between them (ignores deaths and onward migration).
+This script deliberately writes NO flow files. Every flows_*.json has exactly
+one owning script (see the README's regeneration order); an earlier version
+of this script also wrote stock-difference decade files and once silently
+overwrote the Abel & Cohen estimates on a rerun.
 """
 import csv
 import json
@@ -28,11 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "..", "raw")
 OUT = os.path.join(HERE, "..", "data")
 
-YEARS = [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2024]
-PERIODS = [(1990, 2000), (2000, 2010), (2010, 2020), (2020, 2024)]
-PAIR_THRESHOLD = 100  # drop pair entries smaller than this to keep files lean
-
-# Kosovo appears in UN data but not in ISO 3166 lists
+# Kosovo appears in flow sources but not in ISO 3166 lists / UN data
 EXTRA_M49 = {412: ("XK", "Kosovo")}
 # override points for countries whose geometric centroid falls OUTSIDE
 # their own territory (bent/crescent shapes) - reported by a map user
@@ -76,7 +69,7 @@ def load_centroids():
 
 
 def load_stocks(m49_to_iso2):
-    """stocks[dest][orig] = [values for YEARS] (both sexes)."""
+    """stocks[dest][orig] = [stock values per reference year] (both sexes)."""
     wb = openpyxl.load_workbook(os.path.join(RAW, "ims2024_matrix.xlsx"), read_only=True)
     ws = wb["Table 1"]
     stocks = defaultdict(dict)
@@ -105,27 +98,6 @@ def load_stocks(m49_to_iso2):
     return stocks
 
 
-def build_period(stocks, t1, t2):
-    """flows[A][B] = gross migration B->A over the period (stock increase of
-    B-born living in A, clamped at 0), so both directions of a pair are kept.
-    flows[A][A] = A's total net (sum of raw pairwise deltas, unclamped)."""
-    i1, i2 = YEARS.index(t1), YEARS.index(t2)
-    flows = defaultdict(dict)
-    totals = defaultdict(int)
-    for a in stocks:
-        for b in stocks[a]:
-            vals = stocks[a][b]
-            d = vals[i2] - vals[i1]  # change in B-born living in A
-            totals[a] += d
-            totals[b] -= d
-            if d >= PAIR_THRESHOLD:
-                flows[a][b] = d
-    for c, t in totals.items():
-        if flows[c] or abs(t) >= PAIR_THRESHOLD:
-            flows[c][c] = t
-    return {k: v for k, v in flows.items() if v}
-
-
 def main():
     os.makedirs(OUT, exist_ok=True)
     m49_to_iso2, names = load_iso()
@@ -133,14 +105,10 @@ def main():
     stocks = load_stocks(m49_to_iso2)
     print(f"{len(stocks)} destination countries loaded")
 
-    used = {"XK"}  # Kosovo: absent from UN data but present in the Meta flows
-    for t1, t2 in PERIODS:
-        flows = build_period(stocks, t1, t2)
-        used.update(flows.keys())
-        path = os.path.join(OUT, f"flows_{t1}_{t2}.json")
-        with open(path, "w", encoding="utf8") as f:
-            json.dump(flows, f, separators=(",", ":"))
-        print(f"{path}: {len(flows)} countries, {os.path.getsize(path)//1024} KB")
+    used = {"XK"}  # Kosovo: absent from UN data but present in the flow sources
+    for dest in stocks:
+        used.add(dest)
+        used.update(stocks[dest])
 
     countries = {}
     missing = []
